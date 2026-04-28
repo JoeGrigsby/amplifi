@@ -153,7 +153,7 @@
     }
 
     /* SECTIONS */
-    section { padding: 120px 80px; }
+    section { padding: 72px 80px; }
     .section-label {
       font-family: var(--sans); font-size: 11px; font-weight: 600;
       letter-spacing: 0.18em; text-transform: uppercase;
@@ -477,37 +477,47 @@
 
     /* MOBILE */
     @media (max-width: 768px) {
-      nav { padding: 16px 24px; height: auto !important; }
+      nav { padding: 14px 20px; height: auto !important; }
       .nav-links { gap: 0; }
       .nav-links a:not(.nav-cta) { display: none; }
       .nav-cta { padding: 8px 16px; font-size: 12px; }
-      .nav-logo img { height: 56px !important; }
+      .nav-logo img { height: 48px !important; }
 
-      .hero { padding: 0 24px 72px; }
-      .hero-sub { font-size: 15px; }
-      .hero-actions { flex-direction: column; align-items: flex-start; gap: 12px; }
-      .btn-primary, .btn-ghost { padding: 12px 24px; width: 100%; text-align: center; box-sizing: border-box; }
+      /* Hero: hide background image, use solid dark bg, stack content from top */
+      .hero {
+        height: auto; min-height: 0;
+        background: var(--bg);
+        padding: 96px 24px 52px;
+        justify-content: flex-start;
+      }
+      .hero-bg { display: none; }
+      .hero-vignette { display: none; }
+      .hero-scroll { display: none; }
+      .hero-title { font-size: clamp(44px, 13vw, 80px); }
+      .hero-sub { font-size: 15px; margin-bottom: 32px; }
+      .hero-actions { flex-direction: column; align-items: stretch; gap: 12px; }
+      .btn-primary, .btn-ghost { padding: 14px 24px; width: 100%; text-align: center; box-sizing: border-box; }
 
-      section { padding: 72px 24px; }
-      .mission-grid { grid-template-columns: 1fr; gap: 40px; }
+      section { padding: 48px 24px; }
+      .mission-grid { grid-template-columns: 1fr; gap: 32px; }
       .mission-img-wrap { aspect-ratio: 3/2; }
       .mission-text { padding-right: 0; }
-      .mission-stat-row { gap: 24px; }
 
       .programs-grid { grid-template-columns: 1fr; }
       .program-card, .program-card.full { grid-template-columns: 1fr; }
       .program-img, .program-img.tall { aspect-ratio: 16/9; }
-      .program-info { padding: 32px 24px; }
+      .program-info { padding: 28px 20px; }
 
-      .quote-strip { padding: 60px 24px; }
+      .quote-strip { padding: 48px 24px; }
+      .quote-strip blockquote { font-size: clamp(22px, 5vw, 36px); }
 
       .join-inner { max-width: 100%; }
       .form-grid { grid-template-columns: 1fr; }
       .form-field.full { grid-column: 1; }
 
-      footer { padding: 60px 24px 32px; }
-      .footer-grid { grid-template-columns: 1fr; gap: 40px; }
-      .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+      footer { padding: 48px 24px 28px; }
+      .footer-grid { grid-template-columns: 1fr; gap: 32px; }
+      .footer-bottom { flex-direction: column; gap: 10px; text-align: center; }
     }
   </style>
 </head>
