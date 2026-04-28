@@ -499,7 +499,6 @@
   <div class="nav-links">
     <a href="#mission">Mission</a>
     <a href="#programs">Programs</a>
-    <a href="#how-it-works">How It Works</a>
     <a href="#join" class="nav-cta" style="color: rgb(254, 254, 254)">Get Involved</a>
   </div>
 </nav>
@@ -702,59 +701,10 @@ function App({ tweaks }) {
             <p className="section-body" style={{ marginTop: '20px' }}>
               We are an ecosystem engine: connecting artists to venues, fans, studios, and collaborators; building touring infrastructure through the Songwriter Trail; and compounding impact at every stage of an artist's journey.
             </p>
-            {tweaks?.showStats !== false &&
-            <div className="mission-stat-row">
-                <div className="stat">
-                  <div className="stat-num">4</div>
-                  <div className="stat-label">Core Programs</div>
-                </div>
-                <div className="stat">
-                  <div className="stat-num">5</div>
-                  <div className="stat-label">Stakeholder Types</div>
-                </div>
-                <div className="stat">
-                  <div className="stat-num">∞</div>
-                  <div className="stat-label">Songs to Tell</div>
-                </div>
-              </div>
-            }
           </div>
         </div>
       </section>
 
-      {/* ECOSYSTEM */}
-      <section id="ecosystem" className="ecosystem">
-        <div className="ecosystem-inner">
-          <div className="ecosystem-header">
-            <div>
-              <div className="section-label">The Ecosystem</div>
-              <h2 className="section-title">Built for<br /><em>Everyone</em> in the Room</h2>
-            </div>
-            <p className="section-body">AmpliFi works because every stakeholder wins. Artists grow, venues fill rooms, fans find their people, and partners build lasting community.</p>
-          </div>
-          <div className="pillars">
-            {[
-            { icon: '♪', title: 'Artists', body: 'A home for the songwriter — community, tools, bookings, studio access, and the infrastructure to tour sustainably.', who: 'Singer-Songwriters · Collaborators' },
-            { icon: '◈', title: 'Venues', body: 'Curated booking relationships with vetted artists. Songwriter Trail stops that bring new audiences and consistent programming.', who: 'Listening Rooms · Bars · House Venues' },
-            { icon: '◉', title: 'Fans', body: 'Discover artists before they\'re everywhere. Follow the Songwriter Trail, connect with real music, and support the people who make it.', who: 'Music Lovers · Champions' },
-            { icon: '◆', title: 'Partners', body: 'Studios, sponsors, and funders who believe in independent music — and gain meaningful connection and visibility in return.', who: 'Studios · Brands · Foundations' }].
-            map((p, i) =>
-            <div key={i} className="pillar">
-                <div className="pillar-icon">{p.icon}</div>
-                <div className="pillar-title">{p.title}</div>
-                <div className="pillar-body">{p.body}</div>
-                <div className="pillar-who">{p.who}</div>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* DIVIDER IMAGE */}
-      <div className="img-divider">
-        <img src="assets/session.png" alt="Songwriters in session" />
-        <div className="img-divider-text">Where songs are written,<br />connections are made.</div>
-      </div>
 
       {/* PROGRAMS */}
       <section id="programs" className="programs">
@@ -764,79 +714,21 @@ function App({ tweaks }) {
             <h2 className="section-title">How We <em>Bring It</em><br />to Life</h2>
           </div>
           <div className="programs-grid">
-            {[
-            {
-              tag: 'Community', name: 'Songwriter Collectives',
-              desc: 'Identity and community hubs for artists — from the Gruene Songwriters Collective outward. A home base and a creative tribe.',
-              img: 'assets/performer.png',
-              full: false
-            },
-            {
-              tag: 'Touring', name: 'Songwriter Trail',
-              desc: 'A routed network of venues, house shows, and anchor stops — the touring infrastructure independent artists never had.',
-              img: 'assets/hero-stage.png',
-              full: false
-            },
-            {
-              tag: 'Production', name: 'AmpliFi Studio Network',
-              desc: 'Access to professional recording studios, production partners, and pathways to create records that stand up. Quality shouldn\'t be gatekept.',
-              img: 'assets/session.png',
-              full: false
-            },
-            {
-              tag: 'Revenue', name: 'Merch, Sponsorships & Fan Engagement',
-              desc: 'The commercial layer that drives revenue back to artists — merch, brand partnerships, and fan experiences that compound the flywheel.',
-              img: 'assets/hero-stage.png',
-              full: false
-            }].
-            map((prog, i) =>
-            <div key={i} className="program-card">
-                <div className="program-img">
-                  <img src={prog.img} alt={prog.name} />
-                </div>
-                <div className="program-info">
-                  <div className="program-tag">{prog.tag}</div>
-                  <div className="program-name">{prog.name}</div>
-                  <div className="program-desc">{prog.desc}</div>
-                  <button className="program-link">Learn More →</button>
-                </div>
+            <div className="program-card full">
+              <div className="program-img tall">
+                <img src="assets/performer.png" alt="Songwriter Collectives" />
               </div>
-            )}
+              <div className="program-info">
+                <div className="program-tag">Community</div>
+                <div className="program-name">Songwriter Collectives</div>
+                <div className="program-desc">Identity and community hubs for artists — from the Gruene Songwriters Collective outward. A home base and a creative tribe.</div>
+                <a className="program-link" href="https://thegruenesongwriterscollective.com/" target="_blank" rel="noopener noreferrer">Visit the Collective →</a>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* FLYWHEEL */}
-      <section id="how-it-works" className="flywheel">
-        <div className="flywheel-inner">
-          <div className="flywheel-header">
-            <div className="section-label">The Model</div>
-            <h2 className="section-title">The <em>Flywheel</em></h2>
-            <p className="section-body" style={{ margin: '0 auto', textAlign: 'center', maxWidth: '520px' }}>
-              AmpliFi is designed to compound. Every show builds fans. Every fan builds revenue. Every dollar reinvested grows the ecosystem.
-            </p>
-          </div>
-          <div className="flywheel-steps">
-            {[
-            { n: '01', label: 'Artists Perform', desc: 'Songwriters take the stage — at venues, house shows, and Songwriter Trail stops.' },
-            { n: '02', label: 'Build Fans', desc: 'Real audiences, discovered through curated experiences and community.' },
-            { n: '03', label: 'Generate Revenue', desc: 'Shows, merch, streaming, sponsorships — multiple income streams.' },
-            { n: '04', label: 'Reinvest', desc: 'Back into recording, touring, and the next creative cycle.' },
-            { n: '05', label: 'Grow', desc: 'A career, a community, a movement — that compounds over time.' }].
-            map((step, i) =>
-            <div key={i} className="flywheel-step">
-                <div className="fw-num">{step.n}</div>
-                <div className="fw-label">{step.label}</div>
-                <div className="fw-desc">{step.desc}</div>
-              </div>
-            )}
-          </div>
-          <div className="flywheel-cta">
-            <p>Every step forward amplifies the next.</p>
-            <a className="btn-primary" href="#join">Join the Ecosystem</a>
-          </div>
-        </div>
-      </section>
 
       {/* QUOTE STRIP */}
       <div className="quote-strip">
@@ -865,18 +757,6 @@ function App({ tweaks }) {
             </div> :
 
           <form onSubmit={handleSubmit}>
-              <div className="role-tabs">
-                {roles.map((r) =>
-              <button
-                key={r.id}
-                type="button"
-                className={`role-tab${activeRole === r.id ? ' active' : ''}`}
-                onClick={() => {setActiveRole(r.id);setFormData((prev) => ({ ...prev, interests: [] }));}}>
-                
-                    {r.label}
-                  </button>
-              )}
-              </div>
               <div className="form-grid">
                 <div className="form-field">
                   <label>Full Name</label>
@@ -886,29 +766,9 @@ function App({ tweaks }) {
                   <label>Email Address</label>
                   <input type="email" placeholder="you@example.com" required value={formData.email} onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))} />
                 </div>
-                {currentRole.extra.map((field) =>
-              <div key={field.id} className="form-field">
-                    <label>{field.label}</label>
-                    <input type="text" placeholder={field.placeholder} value={formData[field.id] || ''} onChange={(e) => setFormData((p) => ({ ...p, [field.id]: e.target.value }))} />
-                  </div>
-              )}
                 <div className="form-field full">
-                  <label>I'm interested in</label>
-                  <div className="form-check-group">
-                    {currentRole.interests.map((int) =>
-                  <div
-                    key={int}
-                    className={`form-check${formData.interests.includes(int) ? ' checked' : ''}`}
-                    onClick={() => toggleInterest(int)}>
-                    
-                        {formData.interests.includes(int) ? '✓ ' : ''}{int}
-                      </div>
-                  )}
-                  </div>
-                </div>
-                <div className="form-field full">
-                  <label>{currentRole.note}</label>
-                  <textarea placeholder="Optional — tell us more..." value={formData.note} onChange={(e) => setFormData((p) => ({ ...p, note: e.target.value }))} />
+                  <label>Tell us about yourself</label>
+                  <textarea placeholder="Who you are, what you do, how you'd like to get involved..." value={formData.note} onChange={(e) => setFormData((p) => ({ ...p, note: e.target.value }))} />
                 </div>
               </div>
               <div className="form-submit">
