@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AmpliFi — For the Song</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: oklch(11% 0.012 55);
+      --bg-warm: oklch(14% 0.015 55);
+      --bg-card: oklch(16% 0.015 55);
+      --fg: oklch(94% 0.008 65);
+      --fg-muted: oklch(65% 0.01 65);
+      --fg-dim: oklch(45% 0.01 65);
+      --amber: oklch(70% 0.13 65);
+      --amber-dim: oklch(55% 0.10 65);
+      --amber-glow: oklch(70% 0.13 65 / 0.15);
+      --serif: 'Cormorant Garamond', Georgia, serif;
+      --sans: 'DM Sans', system-ui, sans-serif;
+      --border: oklch(25% 0.01 55);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    ::selection { background: var(--amber); color: var(--bg); }
+    img { display: block; max-width: 100%; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 48px;
+      transition: all 0.4s ease;
+    }
+    nav.scrolled {
+      background: oklch(11% 0.012 55 / 0.95);
+      backdrop-filter: blur(12px);
+      padding: 14px 48px;
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .nav-logo img { height: 80px !important; width: auto !important; filter: invert(1); display: block !important; object-fit: contain; }
+    .nav-links { display: flex; gap: 32px; align-items: center; }
+    .nav-links a {
+      color: var(--fg-muted); text-decoration: none;
+      font-family: var(--sans); font-size: 13px; letter-spacing: 0.08em;
+      text-transform: uppercase; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--fg); }
+    .nav-cta {
+      background: var(--amber); color: var(--bg);
+      padding: 9px 22px; border-radius: 2px;
+      font-size: 13px; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .nav-cta:hover { opacity: 0.85; color: var(--bg); }
+
+    /* HERO */
+    .hero {
+      position: relative; height: 100vh; min-height: 700px;
+      display: flex; flex-direction: column;
+      align-items: flex-start; justify-content: flex-end;
+      padding: 0 80px 96px;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background-image: url('uploads/ChatGPT Image Apr 26, 2026, 09_13_25 PM.png');
+      background-size: cover; background-position: center 20%;
+      filter: brightness(0.55) contrast(1.05);
+      transform: scale(1.02);
+      transition: transform 8s ease-out;
+    }
+    .hero-bg.loaded { transform: scale(1); }
+    .hero-vignette {
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        to top,
+        oklch(11% 0.012 55 / 0.95) 0%,
+        oklch(11% 0.012 55 / 0.4) 40%,
+        transparent 70%
+      );
+    }
+    .hero-content { position: relative; z-index: 2; max-width: 780px; }
+    .hero-eyebrow {
+      display: inline-block;
+      font-family: var(--sans); font-size: 11px; font-weight: 600;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--amber); margin-bottom: 20px;
+      border-left: 2px solid var(--amber); padding-left: 12px;
+    }
+    .hero-title {
+      font-family: var(--serif); font-weight: 300;
+      font-size: clamp(64px, 8vw, 110px); line-height: 0.95;
+      letter-spacing: -0.01em; color: var(--fg);
+      margin-bottom: 28px;
+    }
+    .hero-title em { font-style: italic; color: var(--amber); }
+    .hero-sub {
+      font-family: var(--sans); font-size: 17px; font-weight: 300;
+      color: var(--fg-muted); max-width: 520px; line-height: 1.65;
+      margin-bottom: 44px;
+    }
+    .hero-actions { display: flex; gap: 16px; align-items: center; }
+    .btn-primary {
+      background: var(--amber); color: var(--bg);
+      padding: 14px 32px; border-radius: 2px;
+      font-size: 13px; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; cursor: pointer; border: none;
+      transition: opacity 0.2s; font-family: var(--sans);
+      text-decoration: none; display: inline-block;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-ghost {
+      background: transparent; color: var(--fg-muted);
+      padding: 14px 32px; border-radius: 2px;
+      font-size: 13px; font-weight: 500; letter-spacing: 0.08em;
+      text-transform: uppercase; cursor: pointer;
+      border: 1px solid var(--border); transition: all 0.2s;
+      font-family: var(--sans); text-decoration: none; display: inline-block;
+    }
+    .btn-ghost:hover { color: var(--fg); border-color: oklch(40% 0.01 55); }
+    .hero-scroll {
+      position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      color: var(--fg-dim); font-size: 11px; letter-spacing: 0.12em;
+      text-transform: uppercase; z-index: 2; opacity: 0.6;
+    }
+    .scroll-line {
+      width: 1px; height: 40px;
+      background: linear-gradient(to bottom, var(--fg-dim), transparent);
+      animation: scrollpulse 2s ease-in-out infinite;
+    }
+    @keyframes scrollpulse {
+      0%, 100% { opacity: 0.4; transform: scaleY(1); }
+      50% { opacity: 1; transform: scaleY(0.7); }
+    }
+
+    /* SECTIONS */
+    section { padding: 120px 80px; }
+    .section-label {
+      font-family: var(--sans); font-size: 11px; font-weight: 600;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--amber); margin-bottom: 20px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .section-label::before {
+      content: ''; display: block; width: 32px; height: 1px; background: var(--amber);
+    }
+    .section-title {
+      font-family: var(--serif); font-weight: 300;
+      font-size: clamp(40px, 5vw, 68px); line-height: 1.05;
+      letter-spacing: -0.01em; margin-bottom: 24px;
+    }
+    .section-title em { font-style: italic; color: var(--amber); }
+    .section-body {
+      font-family: var(--sans); font-size: 16px; font-weight: 300;
+      color: var(--fg-muted); line-height: 1.75; max-width: 560px;
+    }
+
+    /* MISSION */
+    .mission { background: var(--bg); }
+    .mission-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 80px; align-items: center; max-width: 1200px; margin: 0 auto;
+    }
+    .mission-img-wrap {
+      position: relative; aspect-ratio: 4/5; overflow: hidden; border-radius: 2px;
+    }
+    .mission-img-wrap img {
+      width: 100%; height: 100%; object-fit: cover;
+      filter: contrast(1.05); transition: transform 0.6s ease;
+    }
+    .mission-img-wrap:hover img { transform: scale(1.03); }
+    .mission-img-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, oklch(11% 0.012 55 / 0.5) 0%, transparent 50%);
+    }
+    .mission-quote {
+      position: absolute; bottom: 28px; left: 28px; right: 28px;
+      font-family: var(--serif); font-style: italic; font-size: 22px;
+      line-height: 1.3; color: var(--fg); font-weight: 300;
+    }
+    .mission-text { padding-right: 20px; }
+    .mission-stat-row {
+      display: flex; gap: 40px; margin-top: 52px;
+      padding-top: 40px; border-top: 1px solid var(--border);
+    }
+    .stat { display: flex; flex-direction: column; gap: 4px; }
+    .stat-num {
+      font-family: var(--serif); font-size: 48px; font-weight: 300;
+      color: var(--amber); line-height: 1;
+    }
+    .stat-label {
+      font-family: var(--sans); font-size: 12px; font-weight: 400;
+      color: var(--fg-muted); letter-spacing: 0.06em; text-transform: uppercase;
+    }
+
+    /* ECOSYSTEM */
+    .ecosystem { background: var(--bg-warm); }
+    .ecosystem-inner { max-width: 1200px; margin: 0 auto; }
+    .ecosystem-header { display: flex; gap: 80px; align-items: flex-end; margin-bottom: 80px; }
+    .ecosystem-header .section-body { flex: 1; }
+    .pillars {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px;
+    }
+    .pillar {
+      background: var(--bg-card);
+      padding: 40px 32px; cursor: default;
+      transition: background 0.3s;
+      position: relative; overflow: hidden;
+    }
+    .pillar::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: var(--amber); transform: scaleX(0);
+      transform-origin: left; transition: transform 0.4s ease;
+    }
+    .pillar:hover { background: oklch(19% 0.018 55); }
+    .pillar:hover::before { transform: scaleX(1); }
+    .pillar-icon {
+      font-size: 28px; margin-bottom: 20px;
+      width: 48px; height: 48px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border); border-radius: 2px;
+      color: var(--amber);
+    }
+    .pillar-title {
+      font-family: var(--serif); font-size: 26px; font-weight: 400;
+      margin-bottom: 12px; line-height: 1.1;
+    }
+    .pillar-body {
+      font-family: var(--sans); font-size: 14px; font-weight: 300;
+      color: var(--fg-muted); line-height: 1.7;
+    }
+    .pillar-who {
+      margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border);
+      font-family: var(--sans); font-size: 11px; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber-dim);
+    }
+
+    /* PROGRAMS */
+    .programs { background: var(--bg); }
+    .programs-inner { max-width: 1200px; margin: 0 auto; }
+    .programs-header { margin-bottom: 72px; }
+    .programs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; }
+    .program-card {
+      background: var(--bg-card);
+      display: grid; grid-template-columns: 1fr 1fr;
+      overflow: hidden;
+    }
+    .program-card.full { grid-column: 1 / -1; grid-template-columns: 2fr 1fr; }
+    .program-img {
+      aspect-ratio: 1; overflow: hidden; position: relative;
+    }
+    .program-img.tall { aspect-ratio: auto; }
+    .program-img img {
+      width: 100%; height: 100%; object-fit: cover;
+      filter: brightness(0.7) contrast(1.1);
+      transition: transform 0.6s ease;
+    }
+    .program-card:hover .program-img img { transform: scale(1.05); }
+    .program-info { padding: 48px 40px; display: flex; flex-direction: column; justify-content: center; }
+    .program-tag {
+      font-family: var(--sans); font-size: 10px; font-weight: 600;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--amber); margin-bottom: 16px;
+    }
+    .program-name {
+      font-family: var(--serif); font-size: 32px; font-weight: 400;
+      line-height: 1.1; margin-bottom: 16px;
+    }
+    .program-desc {
+      font-family: var(--sans); font-size: 14px; font-weight: 300;
+      color: var(--fg-muted); line-height: 1.7;
+    }
+    .program-link {
+      margin-top: 24px; display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--sans); font-size: 12px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber);
+      text-decoration: none; cursor: pointer; border: none; background: none;
+      transition: gap 0.2s;
+    }
+    .program-link:hover { gap: 14px; }
+
+    /* FLYWHEEL */
+    .flywheel { background: var(--bg-warm); }
+    .flywheel-inner { max-width: 1100px; margin: 0 auto; }
+    .flywheel-header { text-align: center; margin-bottom: 80px; }
+    .flywheel-header .section-label { justify-content: center; }
+    .flywheel-header .section-label::before { display: none; }
+    .flywheel-steps {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      gap: 0; position: relative;
+    }
+    .flywheel-steps::before {
+      content: '';
+      position: absolute; top: 36px; left: 10%; right: 10%; height: 1px;
+      background: linear-gradient(to right, transparent, var(--border), var(--amber-dim), var(--border), transparent);
+    }
+    .flywheel-step { padding: 24px 20px; text-align: center; position: relative; }
+    .fw-num {
+      width: 72px; height: 72px; border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 24px;
+      font-family: var(--serif); font-size: 28px; font-weight: 300; color: var(--amber);
+      transition: all 0.3s;
+    }
+    .flywheel-step:hover .fw-num {
+      border-color: var(--amber);
+      box-shadow: 0 0 24px var(--amber-glow);
+    }
+    .fw-label {
+      font-family: var(--serif); font-size: 20px; font-weight: 400;
+      margin-bottom: 10px;
+    }
+    .fw-desc {
+      font-family: var(--sans); font-size: 13px; font-weight: 300;
+      color: var(--fg-muted); line-height: 1.65;
+    }
+    .flywheel-cta {
+      text-align: center; margin-top: 80px;
+      padding-top: 64px; border-top: 1px solid var(--border);
+    }
+    .flywheel-cta p {
+      font-family: var(--serif); font-style: italic; font-size: 28px;
+      font-weight: 300; color: var(--fg-muted); margin-bottom: 32px;
+    }
+
+    /* JOIN FORM */
+    .join { background: var(--bg); }
+    .join-inner { max-width: 900px; margin: 0 auto; }
+    .join-header { margin-bottom: 56px; }
+    .role-tabs {
+      display: flex; gap: 2px; margin-bottom: 48px;
+    }
+    .role-tab {
+      flex: 1; padding: 14px 8px; background: var(--bg-card);
+      border: none; cursor: pointer; color: var(--fg-muted);
+      font-family: var(--sans); font-size: 12px; font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      transition: all 0.2s; position: relative;
+    }
+    .role-tab::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+      background: var(--amber); transform: scaleX(0); transition: transform 0.3s;
+    }
+    .role-tab.active { background: oklch(19% 0.018 55); color: var(--fg); }
+    .role-tab.active::after { transform: scaleX(1); }
+    .role-tab:hover:not(.active) { background: oklch(17% 0.015 55); color: var(--fg-muted); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .form-field { display: flex; flex-direction: column; gap: 8px; }
+    .form-field.full { grid-column: 1 / -1; }
+    .form-field label {
+      font-family: var(--sans); font-size: 11px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg-dim);
+    }
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+      background: var(--bg-card); border: 1px solid var(--border);
+      color: var(--fg); padding: 13px 16px; border-radius: 2px;
+      font-family: var(--sans); font-size: 15px; font-weight: 300;
+      outline: none; transition: border-color 0.2s;
+      appearance: none; -webkit-appearance: none;
+    }
+    .form-field input:focus,
+    .form-field select:focus,
+    .form-field textarea:focus { border-color: var(--amber); }
+    .form-field input::placeholder,
+    .form-field textarea::placeholder { color: var(--fg-dim); }
+    .form-field select option { background: var(--bg-card); }
+    .form-field textarea { resize: none; min-height: 110px; }
+    .form-check-group { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+    .form-check {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      padding: 8px 14px; border-radius: 2px; cursor: pointer;
+      font-family: var(--sans); font-size: 13px; font-weight: 400;
+      color: var(--fg-muted); transition: all 0.2s; user-select: none;
+    }
+    .form-check.checked { border-color: var(--amber); color: var(--fg); background: var(--amber-glow); }
+    .form-submit {
+      margin-top: 36px; display: flex; align-items: center; gap: 20px;
+    }
+    .success-msg {
+      display: none; background: var(--amber-glow); border: 1px solid var(--amber);
+      border-radius: 2px; padding: 20px 24px;
+      font-family: var(--sans); font-size: 14px; color: var(--amber);
+    }
+    .success-msg.show { display: block; }
+
+    /* QUOTE STRIP */
+    .quote-strip {
+      padding: 80px 80px;
+      background: var(--amber);
+      text-align: center;
+    }
+    .quote-strip blockquote {
+      font-family: var(--serif); font-style: italic; font-weight: 300;
+      font-size: clamp(28px, 4vw, 48px); line-height: 1.2;
+      color: var(--bg); max-width: 800px; margin: 0 auto 20px;
+    }
+    .quote-strip cite {
+      font-family: var(--sans); font-size: 12px; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase; color: oklch(18% 0.04 55);
+    }
+
+    /* FOOTER */
+    footer {
+      background: oklch(9% 0.01 55);
+      padding: 80px 80px 40px;
+      border-top: 1px solid var(--border);
+    }
+    .footer-grid {
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 60px; margin-bottom: 64px;
+    }
+    .footer-brand img { height: 40px; filter: invert(1); margin-bottom: 16px; }
+    .footer-brand p {
+      font-family: var(--sans); font-size: 14px; font-weight: 300;
+      color: var(--fg-muted); line-height: 1.7; max-width: 280px;
+    }
+    .footer-col h4 {
+      font-family: var(--sans); font-size: 11px; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase; color: var(--fg-dim);
+      margin-bottom: 20px;
+    }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer-col ul li a {
+      font-family: var(--sans); font-size: 14px; font-weight: 300;
+      color: var(--fg-muted); text-decoration: none; transition: color 0.2s;
+    }
+    .footer-col ul li a:hover { color: var(--amber); }
+    .footer-bottom {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 32px; border-top: 1px solid var(--border);
+      font-family: var(--sans); font-size: 12px; color: var(--fg-dim);
+    }
+    .footer-bottom a { color: var(--fg-dim); text-decoration: none; }
+    .footer-bottom a:hover { color: var(--amber); }
+
+    /* DIVIDER IMG */
+    .img-divider {
+      height: 360px; overflow: hidden; position: relative;
+    }
+    .img-divider img {
+      width: 100%; height: 100%; object-fit: cover;
+      object-position: center 30%;
+      filter: brightness(0.4) contrast(1.15);
+    }
+    .img-divider-text {
+      position: absolute; inset: 0; display: flex; align-items: center;
+      justify-content: center;
+      font-family: var(--serif); font-style: italic; font-size: clamp(32px, 5vw, 60px);
+      font-weight: 300; color: var(--fg); text-align: center; padding: 40px;
+      line-height: 1.15;
+    }
+
+    /* NONPROFIT BADGE */
+    .nonprofit-strip {
+      background: var(--bg-warm);
+      padding: 24px 80px;
+      display: flex; align-items: center; justify-content: center; gap: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .nonprofit-strip span {
+      font-family: var(--sans); font-size: 12px; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg-dim);
+    }
+    .nonprofit-strip .dot { color: var(--amber); }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="main-nav" style="height: 100px">
+  <div class="nav-logo" onclick="document.getElementById('hero').scrollIntoView()">
+    <img src="uploads/AmpliFiLogo.png" alt="AmpliFi" style="width: 100px; height: 1px" />
+  </div>
+  <div class="nav-links">
+    <a href="#mission">Mission</a>
+    <a href="#programs">Programs</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#join" class="nav-cta" style="color: rgb(254, 254, 254)">Get Involved</a>
+  </div>
+</nav>
+
+<!-- APP ROOT -->
+<div id="root"></div>
+
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel">
+
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accentColor": "oklch(70% 0.13 65)",
+  "heroImage": "stage",
+  "showStats": true,
+  "fontScale": 1
+} /*EDITMODE-END*/;
+
+const { useState, useEffect, useRef } = React;
+
+// ---- TWEAKS PANEL ----
+function AppWithTweaks() {
+  const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty('--amber', tweaks.accentColor);
+    const [l, c, h] = tweaks.accentColor.match(/[\d.]+%?/g) || [];
+    if (l && c && h) {
+      const lv = parseFloat(l) * 0.78;
+      root.style.setProperty('--amber-dim', `oklch(${lv}% ${parseFloat(c) * 0.77} ${h})`);
+      root.style.setProperty('--amber-glow', `${tweaks.accentColor.replace(')', ' / 0.15)').replace('oklch(', 'oklch(')}`);
+    }
+  }, [tweaks.accentColor]);
+
+  return (
+    <>
+      <App tweaks={tweaks} />
+      <TweaksPanel>
+        <TweakSection title="Accent Color">
+          <TweakColor label="Primary Accent" tweakKey="accentColor" />
+        </TweakSection>
+        <TweakSection title="Hero Image">
+          <TweakRadio tweakKey="heroImage" options={[
+          { label: "Stage", value: "stage" },
+          { label: "Session", value: "session" },
+          { label: "Barn", value: "barn" }]
+          } />
+        </TweakSection>
+        <TweakSection title="Content">
+          <TweakToggle label="Show Impact Stats" tweakKey="showStats" />
+        </TweakSection>
+      </TweaksPanel>
+    </>);
+
+}
+
+// ---- MAIN APP ----
+function App({ tweaks }) {
+  const [scrolled, setScrolled] = useState(false);
+  const [activeRole, setActiveRole] = useState('artist');
+  const [formData, setFormData] = useState({ name: '', email: '', location: '', note: '', interests: [] });
+  const [submitted, setSubmitted] = useState(false);
+  const [bgLoaded, setBgLoaded] = useState(false);
+
+  const heroImages = {
+    stage: "uploads/ChatGPT Image Apr 26, 2026, 09_13_25 PM.png",
+    session: "uploads/9d58133d-bea5-4615-b87c-4e6bfa150a98.png",
+    barn: "uploads/f989d8cf-67ca-4d1b-8097-231121f9e263.png"
+  };
+  const heroImg = heroImages[tweaks?.heroImage || 'stage'];
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 60);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    const nav = document.getElementById('main-nav');
+    if (nav) nav.className = scrolled ? 'scrolled' : '';
+  }, [scrolled]);
+
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => setBgLoaded(true);
+    img.src = heroImg;
+  }, [heroImg]);
+
+  const roles = [
+  { id: 'artist', label: 'Artist' },
+  { id: 'venue', label: 'Venue / Booker' },
+  { id: 'fan', label: 'Fan' },
+  { id: 'donor', label: 'Donor / Sponsor' },
+  { id: 'studio', label: 'Studio Partner' }];
+
+
+  const roleFields = {
+    artist: {
+      extra: [
+      { id: 'genre', label: 'Genre / Style', placeholder: 'Americana, Singer-Songwriter, Country...' },
+      { id: 'city', label: 'Based in', placeholder: 'Austin, TX' }],
+
+      interests: ['Songwriter Collective', 'Songwriter Trail', 'Studio Access', 'Booking Support', 'Merch & Revenue'],
+      note: 'Tell us about your music and where you are in your journey'
+    },
+    venue: {
+      extra: [
+      { id: 'venuename', label: 'Venue Name', placeholder: 'The Back Porch, Gruene Hall...' },
+      { id: 'capacity', label: 'Venue Type / Capacity', placeholder: 'Listening room, 80 cap' }],
+
+      interests: ['Songwriter Trail Stop', 'Booking Network', 'House Shows', 'Co-presented Events'],
+      note: 'Tell us about your venue and what you\'re looking for'
+    },
+    fan: {
+      extra: [
+      { id: 'city', label: 'Your City', placeholder: 'San Antonio, TX' },
+      { id: 'fav', label: 'Favorite Venue or Artist', placeholder: '' }],
+
+      interests: ['Show Alerts', 'Songwriter Trail Map', 'Merch & Releases', 'Volunteer'],
+      note: 'Anything else you\'d like us to know?'
+    },
+    donor: {
+      extra: [
+      { id: 'org', label: 'Organization (if any)', placeholder: 'Company or Foundation' },
+      { id: 'giving', label: 'Giving Level', placeholder: 'Exploring / $1K–$5K / $5K+' }],
+
+      interests: ['Individual Gift', 'Corporate Sponsorship', 'Foundation Grant', 'Event Sponsorship'],
+      note: 'Share your interests and any questions about the mission'
+    },
+    studio: {
+      extra: [
+      { id: 'studioname', label: 'Studio Name', placeholder: '' },
+      { id: 'city', label: 'Location', placeholder: 'Austin, TX' }],
+
+      interests: ['Studio Network Partner', 'Production Packages', 'Artist Referrals', 'Co-programming'],
+      note: 'Tell us about your studio and how you\'d like to work together'
+    }
+  };
+
+  const toggleInterest = (interest) => {
+    setFormData((prev) => ({
+      ...prev,
+      interests: prev.interests.includes(interest) ?
+      prev.interests.filter((i) => i !== interest) :
+      [...prev.interests, interest]
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setSubmitted(true);
+  };
+
+  const currentRole = roleFields[activeRole];
+
+  return (
+    <div>
+      {/* HERO */}
+      <section id="hero" style={{ position: 'relative', height: '100vh', minHeight: '700px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'flex-end', padding: '0 80px 96px', overflow: 'hidden' }}>
+        <div className={`hero-bg${bgLoaded ? ' loaded' : ''}`} style={{ backgroundImage: `url('${heroImg}')` }}></div>
+        <div className="hero-vignette"></div>
+        <div className="hero-content">
+          <div className="hero-eyebrow">A Nonprofit Platform for Independent Songwriters</div>
+          <h1 className="hero-title">Where the<br />Song <em>Lives.</em></h1>
+          <p className="hero-sub" style={{ color: "rgb(255, 250, 250)", opacity: "0.5" }}>AmpliFi connects artists, venues, fans, and partners into a unified ecosystem, removing barriers and building pathways to a sustainable creative life.</p>
+          <div className="hero-actions">
+            <a className="btn-primary" href="#join">Get Involved</a>
+            <a className="btn-ghost" href="#mission" style={{ color: "rgb(214, 140, 59)", borderColor: "rgb(214, 140, 59)" }}>Our Mission</a>
+          </div>
+        </div>
+        <div className="hero-scroll">
+          <div className="scroll-line"></div>
+        </div>
+      </section>
+
+      {/* NONPROFIT STRIP */}
+      <div className="nonprofit-strip">
+        <span>501(c)(3) Nonprofit Organization</span>
+        <span className="dot">·</span>
+        <span>Independent Songwriter Ecosystem</span>
+        <span className="dot">·</span>
+        <span>Texas-Rooted, Nationally Reaching</span>
+      </div>
+
+      {/* MISSION */}
+      <section id="mission" className="mission">
+        <div className="mission-grid">
+          <div className="mission-img-wrap">
+            <img src="uploads/f989d8cf-67ca-4d1b-8097-231121f9e263.png" alt="Artist performing" />
+            <div className="mission-img-overlay"></div>
+            <div className="mission-quote">"The song is where it all begins."</div>
+          </div>
+          <div className="mission-text">
+            <div className="section-label">Our Mission</div>
+            <h2 className="section-title">From <em>Passion</em><br />to Profession</h2>
+            <p className="section-body">Independent songwriters carry culture forward, but the path from a great song to a sustainable career has never been easy. AmpliFi was built to change that.
+
+            </p>
+            <p className="section-body" style={{ marginTop: '20px' }}>
+              We are an ecosystem engine: connecting artists to venues, fans, studios, and collaborators; building touring infrastructure through the Songwriter Trail; and compounding impact at every stage of an artist's journey.
+            </p>
+            {tweaks?.showStats !== false &&
+            <div className="mission-stat-row">
+                <div className="stat">
+                  <div className="stat-num">4</div>
+                  <div className="stat-label">Core Programs</div>
+                </div>
+                <div className="stat">
+                  <div className="stat-num">5</div>
+                  <div className="stat-label">Stakeholder Types</div>
+                </div>
+                <div className="stat">
+                  <div className="stat-num">∞</div>
+                  <div className="stat-label">Songs to Tell</div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+
+      {/* ECOSYSTEM */}
+      <section id="ecosystem" className="ecosystem">
+        <div className="ecosystem-inner">
+          <div className="ecosystem-header">
+            <div>
+              <div className="section-label">The Ecosystem</div>
+              <h2 className="section-title">Built for<br /><em>Everyone</em> in the Room</h2>
+            </div>
+            <p className="section-body">AmpliFi works because every stakeholder wins. Artists grow, venues fill rooms, fans find their people, and partners build lasting community.</p>
+          </div>
+          <div className="pillars">
+            {[
+            { icon: '♪', title: 'Artists', body: 'A home for the songwriter — community, tools, bookings, studio access, and the infrastructure to tour sustainably.', who: 'Singer-Songwriters · Collaborators' },
+            { icon: '◈', title: 'Venues', body: 'Curated booking relationships with vetted artists. Songwriter Trail stops that bring new audiences and consistent programming.', who: 'Listening Rooms · Bars · House Venues' },
+            { icon: '◉', title: 'Fans', body: 'Discover artists before they\'re everywhere. Follow the Songwriter Trail, connect with real music, and support the people who make it.', who: 'Music Lovers · Champions' },
+            { icon: '◆', title: 'Partners', body: 'Studios, sponsors, and funders who believe in independent music — and gain meaningful connection and visibility in return.', who: 'Studios · Brands · Foundations' }].
+            map((p, i) =>
+            <div key={i} className="pillar">
+                <div className="pillar-icon">{p.icon}</div>
+                <div className="pillar-title">{p.title}</div>
+                <div className="pillar-body">{p.body}</div>
+                <div className="pillar-who">{p.who}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* DIVIDER IMAGE */}
+      <div className="img-divider">
+        <img src="uploads/9d58133d-bea5-4615-b87c-4e6bfa150a98.png" alt="Songwriters in session" />
+        <div className="img-divider-text">Where songs are written,<br />connections are made.</div>
+      </div>
+
+      {/* PROGRAMS */}
+      <section id="programs" className="programs">
+        <div className="programs-inner">
+          <div className="programs-header">
+            <div className="section-label">Programs & Initiatives</div>
+            <h2 className="section-title">How We <em>Bring It</em><br />to Life</h2>
+          </div>
+          <div className="programs-grid">
+            {[
+            {
+              tag: 'Community', name: 'Songwriter Collectives',
+              desc: 'Identity and community hubs for artists — from the Gruene Songwriters Collective outward. A home base and a creative tribe.',
+              img: 'uploads/f989d8cf-67ca-4d1b-8097-231121f9e263.png',
+              full: false
+            },
+            {
+              tag: 'Touring', name: 'Songwriter Trail',
+              desc: 'A routed network of venues, house shows, and anchor stops — the touring infrastructure independent artists never had.',
+              img: 'uploads/ChatGPT Image Apr 26, 2026, 09_13_25 PM.png',
+              full: false
+            },
+            {
+              tag: 'Production', name: 'AmpliFi Studio Network',
+              desc: 'Access to professional recording studios, production partners, and pathways to create records that stand up. Quality shouldn\'t be gatekept.',
+              img: 'uploads/9d58133d-bea5-4615-b87c-4e6bfa150a98.png',
+              full: false
+            },
+            {
+              tag: 'Revenue', name: 'Merch, Sponsorships & Fan Engagement',
+              desc: 'The commercial layer that drives revenue back to artists — merch, brand partnerships, and fan experiences that compound the flywheel.',
+              img: 'uploads/ChatGPT Image Apr 26, 2026, 09_13_25 PM.png',
+              full: false
+            }].
+            map((prog, i) =>
+            <div key={i} className="program-card">
+                <div className="program-img">
+                  <img src={prog.img} alt={prog.name} />
+                </div>
+                <div className="program-info">
+                  <div className="program-tag">{prog.tag}</div>
+                  <div className="program-name">{prog.name}</div>
+                  <div className="program-desc">{prog.desc}</div>
+                  <button className="program-link">Learn More →</button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* FLYWHEEL */}
+      <section id="how-it-works" className="flywheel">
+        <div className="flywheel-inner">
+          <div className="flywheel-header">
+            <div className="section-label">The Model</div>
+            <h2 className="section-title">The <em>Flywheel</em></h2>
+            <p className="section-body" style={{ margin: '0 auto', textAlign: 'center', maxWidth: '520px' }}>
+              AmpliFi is designed to compound. Every show builds fans. Every fan builds revenue. Every dollar reinvested grows the ecosystem.
+            </p>
+          </div>
+          <div className="flywheel-steps">
+            {[
+            { n: '01', label: 'Artists Perform', desc: 'Songwriters take the stage — at venues, house shows, and Songwriter Trail stops.' },
+            { n: '02', label: 'Build Fans', desc: 'Real audiences, discovered through curated experiences and community.' },
+            { n: '03', label: 'Generate Revenue', desc: 'Shows, merch, streaming, sponsorships — multiple income streams.' },
+            { n: '04', label: 'Reinvest', desc: 'Back into recording, touring, and the next creative cycle.' },
+            { n: '05', label: 'Grow', desc: 'A career, a community, a movement — that compounds over time.' }].
+            map((step, i) =>
+            <div key={i} className="flywheel-step">
+                <div className="fw-num">{step.n}</div>
+                <div className="fw-label">{step.label}</div>
+                <div className="fw-desc">{step.desc}</div>
+              </div>
+            )}
+          </div>
+          <div className="flywheel-cta">
+            <p>Every step forward amplifies the next.</p>
+            <a className="btn-primary" href="#join">Join the Ecosystem</a>
+          </div>
+        </div>
+      </section>
+
+      {/* QUOTE STRIP */}
+      <div className="quote-strip">
+        <blockquote>
+          "AmpliFi is committed to building a thriving, connected ecosystem where independent songwriters can create, perform, and sustain a meaningful career."
+        </blockquote>
+        <cite>AmpliFi Mission Statement</cite>
+      </div>
+
+      {/* JOIN */}
+      <section id="join" className="join">
+        <div className="join-inner">
+          <div className="join-header">
+            <div className="section-label">Get Involved</div>
+            <h2 className="section-title">Find Your <em>Place</em><br />in the Ecosystem</h2>
+            <p className="section-body">Whether you play, book, listen, fund, or record — there's a role for you in AmpliFi. Tell us who you are and we'll show you where you fit.</p>
+          </div>
+
+          {submitted ?
+          <div style={{ padding: '64px 0', textAlign: 'center' }}>
+              <div style={{ fontFamily: 'var(--serif)', fontSize: '56px', fontWeight: '300', color: 'var(--amber)', marginBottom: '16px' }}>♪</div>
+              <h3 style={{ fontFamily: 'var(--serif)', fontSize: '36px', fontWeight: '300', marginBottom: '16px' }}>You're in the room.</h3>
+              <p style={{ fontFamily: 'var(--sans)', fontSize: '16px', fontWeight: '300', color: 'var(--fg-muted)', maxWidth: '440px', margin: '0 auto' }}>
+                Thanks for reaching out. Someone from AmpliFi will be in touch soon. In the meantime, share this with a songwriter who needs it.
+              </p>
+            </div> :
+
+          <form onSubmit={handleSubmit}>
+              <div className="role-tabs">
+                {roles.map((r) =>
+              <button
+                key={r.id}
+                type="button"
+                className={`role-tab${activeRole === r.id ? ' active' : ''}`}
+                onClick={() => {setActiveRole(r.id);setFormData((prev) => ({ ...prev, interests: [] }));}}>
+                
+                    {r.label}
+                  </button>
+              )}
+              </div>
+              <div className="form-grid">
+                <div className="form-field">
+                  <label>Full Name</label>
+                  <input type="text" placeholder="Your name" required value={formData.name} onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))} />
+                </div>
+                <div className="form-field">
+                  <label>Email Address</label>
+                  <input type="email" placeholder="you@example.com" required value={formData.email} onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))} />
+                </div>
+                {currentRole.extra.map((field) =>
+              <div key={field.id} className="form-field">
+                    <label>{field.label}</label>
+                    <input type="text" placeholder={field.placeholder} value={formData[field.id] || ''} onChange={(e) => setFormData((p) => ({ ...p, [field.id]: e.target.value }))} />
+                  </div>
+              )}
+                <div className="form-field full">
+                  <label>I'm interested in</label>
+                  <div className="form-check-group">
+                    {currentRole.interests.map((int) =>
+                  <div
+                    key={int}
+                    className={`form-check${formData.interests.includes(int) ? ' checked' : ''}`}
+                    onClick={() => toggleInterest(int)}>
+                    
+                        {formData.interests.includes(int) ? '✓ ' : ''}{int}
+                      </div>
+                  )}
+                  </div>
+                </div>
+                <div className="form-field full">
+                  <label>{currentRole.note}</label>
+                  <textarea placeholder="Optional — tell us more..." value={formData.note} onChange={(e) => setFormData((p) => ({ ...p, note: e.target.value }))} />
+                </div>
+              </div>
+              <div className="form-submit">
+                <button type="submit" className="btn-primary">Send It →</button>
+                <span style={{ fontFamily: 'var(--sans)', fontSize: '13px', fontWeight: '300', color: 'var(--fg-dim)' }}>We'll follow up within a few days.</span>
+              </div>
+            </form>
+          }
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer>
+        <div className="footer-grid">
+          <div className="footer-brand">
+            <img src="uploads/AmpliFiLogo.png" alt="AmpliFi" style={{height:'40px',width:'auto',filter:'invert(1)'}} />
+            <p>A nonprofit platform building the ecosystem for independent songwriters — from creation to career.</p>
+          </div>
+          <div className="footer-col">
+            <h4>Programs</h4>
+            <ul>
+              <li><a href="#programs">Songwriter Collectives</a></li>
+              <li><a href="#programs">Songwriter Trail</a></li>
+              <li><a href="#programs">Studio Network</a></li>
+              <li><a href="#programs">Merch & Revenue</a></li>
+            </ul>
+          </div>
+          <div className="footer-col">
+            <h4>Get Involved</h4>
+            <ul>
+              <li><a href="#join">For Artists</a></li>
+              <li><a href="#join">For Venues</a></li>
+              <li><a href="#join">For Fans</a></li>
+              <li><a href="#join">For Donors</a></li>
+            </ul>
+          </div>
+          <div className="footer-col">
+            <h4>Organization</h4>
+            <ul>
+              <li><a href="#">About</a></li>
+              <li><a href="#">Board & Team</a></li>
+              <li><a href="#">Contact</a></li>
+              <li><a href="#">Donate</a></li>
+            </ul>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <span>© 2026 AmpliFi. All rights reserved. 501(c)(3) Nonprofit.</span>
+          <span><a href="#">Privacy</a> · <a href="#">Terms</a></span>
+        </div>
+      </footer>
+    </div>);
+
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<AppWithTweaks />);
+</script>
+</body>
+</html>
