@@ -8,6 +8,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script
+    async
+    crossorigin="anonymous"
+    data-clerk-publishable-key="pk_live_Y2xlcmsuc3VwcG9ydGFtcGxpZmkuY29tJA"
+    src="https://clerk.supportamplifi.com/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+    type="text/javascript"
+  ></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -45,38 +52,9 @@
       z-index: 999;
     }
     .gate-inner {
-      width: 360px;
       display: flex; flex-direction: column; align-items: center; gap: 40px;
     }
     .gate-logo { height: 52px; filter: invert(1); }
-    .gate-form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
-    .gate-label {
-      font-family: var(--sans); font-size: 10px; font-weight: 600;
-      letter-spacing: 0.16em; text-transform: uppercase;
-      color: var(--fg-dim); margin-bottom: 6px; display: block;
-    }
-    .gate-input {
-      width: 100%; padding: 13px 16px;
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: 2px; color: var(--fg);
-      font-family: var(--sans); font-size: 15px;
-      outline: none; transition: border-color 0.2s;
-    }
-    .gate-input:focus { border-color: var(--amber); }
-    .gate-error {
-      font-size: 12px; color: var(--red);
-      display: none; text-align: center;
-    }
-    .gate-error.show { display: block; }
-    .btn-primary {
-      width: 100%; padding: 13px;
-      background: var(--amber); color: var(--bg);
-      border: none; border-radius: 2px; cursor: pointer;
-      font-family: var(--sans); font-size: 12px;
-      font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
-      transition: opacity 0.2s;
-    }
-    .btn-primary:hover { opacity: 0.85; }
 
     /* ── TOPBAR ── */
     .topbar {
@@ -348,14 +326,7 @@
 <div id="gate">
   <div class="gate-inner">
     <img src="assets/AmpliFiLogo.png" alt="AmpliFi" class="gate-logo" />
-    <form class="gate-form" id="login-form">
-      <div>
-        <label class="gate-label" for="pwd-input">Access Code</label>
-        <input class="gate-input" type="password" id="pwd-input" placeholder="Enter access code" autofocus autocomplete="current-password" />
-      </div>
-      <div class="gate-error" id="gate-error">Incorrect access code. Please try again.</div>
-      <button type="submit" class="btn-primary">Enter</button>
-    </form>
+    <div id="clerk-sign-in"></div>
   </div>
 </div>
 
@@ -536,40 +507,25 @@
 </div>
 
 <script>
-  const PASSWORD = 'Mulberry';
-  const AUTH_KEY = 'amplifi_hub_auth';
   const ACTIONS_KEY = 'amplifi_actions';
-  const LEDGER_KEY = 'amplifi_ledger';
+  const LEDGER_KEY  = 'amplifi_ledger';
 
   let editingActionId = null;
   let editingLedgerId = null;
 
-  // ── AUTH ──────────────────────────────────────────────
-  function checkAuth() {
-    return sessionStorage.getItem(AUTH_KEY) === '1';
-  }
-
+  // ── AUTH (Clerk) ───────────────────────────────────────
   function logout() {
-    sessionStorage.removeItem(AUTH_KEY);
-    document.getElementById('dashboard').style.display = 'none';
-    document.getElementById('gate').style.display = 'flex';
-    document.getElementById('pwd-input').value = '';
+    window.Clerk.signOut().then(() => location.reload());
   }
 
-  document.getElementById('login-form').addEventListener('submit', e => {
-    e.preventDefault();
-    const val = document.getElementById('pwd-input').value;
-    const err = document.getElementById('gate-error');
-    if (val === PASSWORD) {
-      sessionStorage.setItem(AUTH_KEY, '1');
+  window.addEventListener('load', async () => {
+    await window.Clerk.load();
+    if (window.Clerk.user) {
       document.getElementById('gate').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
-      err.classList.remove('show');
       initDashboard();
     } else {
-      err.classList.add('show');
-      document.getElementById('pwd-input').value = '';
-      document.getElementById('pwd-input').focus();
+      window.Clerk.mountSignIn(document.getElementById('clerk-sign-in'));
     }
   });
 
@@ -871,12 +827,6 @@
     if (e.target === e.currentTarget) closeLedgerModal();
   });
 
-  // ── BOOT ──────────────────────────────────────────────
-  if (checkAuth()) {
-    document.getElementById('gate').style.display = 'none';
-    document.getElementById('dashboard').style.display = 'block';
-    initDashboard();
-  }
 </script>
 </body>
 </html>
