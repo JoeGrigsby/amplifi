@@ -1,0 +1,365 @@
+# Guide for Organizing Not-for-Profit Corporations (Illinois)
+
+_Source: :contentReference[oaicite:0]{index=0}_
+
+---
+
+## Overview
+
+This guide provides assistance for forming a Not-for-Profit Corporation in Illinois. It includes:
+
+- Filing requirements
+- Legal obligations
+- Fees and forms
+- Post-incorporation responsibilities
+
+> This guide is not a substitute for legal advice. Consult an attorney or accountant for legal, tax, and financial implications.
+
+---
+
+## Key Agencies & Contact Information
+
+### Illinois Secretary of State
+- Website: https://ilsos.gov  
+- Springfield Office:  
+  501 S. Second St., Rm. 350  
+  Springfield, IL 62756  
+  217-524-8008  
+- Chicago Office:  
+  69 W. Washington St., Ste. 1240  
+  Chicago, IL 60602  
+  312-793-3380  
+
+### Illinois Department of Revenue
+- Website: https://tax.illinois.gov  
+- Phone: 800-732-8866  
+
+### Illinois Attorney General
+- Springfield: 217-782-1090  
+- Chicago: 312-814-2595  
+
+### Internal Revenue Service (IRS)
+- Website: https://irs.gov  
+- Phone: 800-829-1040  
+
+---
+
+## Articles of Incorporation
+
+The **Articles of Incorporation** is the legal document used to form a corporation.
+
+### Requirements
+
+- Submit **two copies** (one original)
+- Use **Form NFP 102.10**
+- Include:
+  - Corporate name
+  - Registered agent and office
+  - Directors
+  - Purpose
+  - Incorporators
+
+---
+
+## Corporate Name Rules
+
+- Must be **distinct** from existing entities
+- May require **“NFP” designation**
+- Cannot include political party names without approval
+
+### Name Reservation
+
+- Reserve for 90 days
+- Fee: **$25**
+
+---
+
+## Registered Agent & Office
+
+### Requirements
+
+- Must be:
+  - Illinois resident **OR**
+  - Authorized business entity
+- Must have a **physical Illinois address (no P.O. boxes)**
+
+Failure to maintain this can result in dissolution.
+
+---
+
+## Purpose of Corporation
+
+Must be **specific and narrow**
+
+### Acceptable Purpose Categories
+
+- Charitable
+- Educational
+- Religious
+- Scientific
+- Civic
+- Literary
+- Agricultural
+- Research
+- Social
+- Professional/trade associations
+- Community services
+- Cooperative services
+
+> Avoid vague or business-oriented language.
+
+---
+
+## Directors & Incorporators
+
+- Minimum **3 directors**
+- Incorporators:
+  - At least one
+  - Must be 18+ or a legal entity
+
+---
+
+## Filing the Articles
+
+### Requirements
+
+- Completed forms (2 copies)
+- Filing fee: **$50**
+
+### Payment Methods
+
+- Credit card
+- Certified check
+- Cashier’s check
+- Money order
+- Attorney/CPA check
+
+---
+
+## After Incorporation
+
+### Federal Tax
+
+- Apply via IRS (Form 1023 or 1024)
+- Incorporation required before applying
+
+### Illinois Tax
+
+- Federal exemption = Illinois exemption
+- Otherwise must file state taxes
+
+### Sales Tax
+
+- Possible exemption for:
+  - Charitable
+  - Religious
+  - Educational organizations
+
+### Attorney General Registration
+
+- Required for some charitable organizations
+
+---
+
+## Reporting Requirements
+
+### Annual Reports
+
+- Filed with Secretary of State
+- Due **before anniversary month**
+- Missing filings may result in dissolution
+
+### Other Reporting
+
+- IRS filings
+- Illinois Department of Revenue filings
+- Attorney General filings
+
+---
+
+## Forms & Fees (Selected)
+
+| Form | Description | Fee | Expedited |
+|------|-------------|-----|----------|
+| NFP 102.10 | Articles of Incorporation | $50 | $25 |
+| NFP 104.10 | Name Reservation | $25 | $25 |
+| NFP 105.10 | Change Agent/Office | $5 | $25 |
+| NFP 110.30 | Amendment | $25 | $25 |
+| NFP 114.05 | Annual Report | $10 | $25 |
+
+---
+
+# Articles of Incorporation (Form NFP 102.10)
+
+_Source: :contentReference[oaicite:1]{index=1}_
+
+## Article 1: Corporate Name
+
+----	
+
+
+## Article 2: Registered Agent & Office
+- Agent Name
+- Address (Illinois, no P.O. Box)
+
+## Article 3: Board of Directors
+- Minimum: 3
+- Names and addresses required
+
+## Article 4: Purpose
+
+----
+
+## Article 5: Other Provisions
+- Tax-exempt language
+- Governance rules
+
+## Article 6: Entity Type (Check One)
+- Condominium Association
+- Cooperative Housing
+- Homeowners Association
+
+## Article 7: Incorporators
+- Names, addresses, signatures
+
+---
+
+# Filing Confirmation & Submission Details
+
+## Application Receipt
+
+_Source: :contentReference[oaicite:2]{index=2}_
+
+- Proposed Name: **AMPLIFI**
+- Packet Number: **177783390066921565**
+- Authorization Number: **33566117**
+- Status: Submitted
+
+---
+
+## Payment Confirmation
+
+_Source: :contentReference[oaicite:3]{index=3}_
+
+- Name: Joseph Grigsby
+- Date: May 3, 2026
+- Confirmation #: 33566117
+- Amount Paid: $50.00 (+ fee)
+- Payment Method: Visa
+
+---
+
+## Filing Receipt Summary
+
+- Total Fee: ~$51.13
+- Submission Date: May 3, 2026
+- Filing Type: Articles of Incorporation (NFP)
+
+---
+
+# Summary
+
+You have successfully:
+
+- Submitted Articles of Incorporation
+- Paid required fees
+- Registered the name **AMPLIFI**
+- Initiated formation of an Illinois Not-for-Profit
+
+### Next Steps
+
+1. Wait for approval and file number
+2. Draft bylaws
+3. Apply for EIN (IRS)
+4. Apply for 501(c)(3) if applicable
+5. Register with Illinois Attorney General (if required)
+6. Set up annual reporting compliance
+
+---
+
+# Application 
+
+## Date: May 3, 2026 
+## Packet Number: 177783390066921565 
+## Authorization Number: 33566117 
+## Total Amount: 51.13
+
+----
+
+# Articles of Incorporation – Not For Profit (Illinois)
+
+_Source: :contentReference[oaicite:0]{index=0}_
+
+---
+
+## Review of Submitted Information
+
+### Corporation Name
+**AMPLIFI**
+
+---
+
+## Agent Details
+
+- **Name:** Joseph C. Grigsby  
+- **Address:** 4025 Johnson Ave  
+- **City:** Western Springs  
+- **State:** Illinois  
+- **ZIP:** 60558-1108  
+- **County:** Cook  
+
+---
+
+## Board of Directors
+
+1. **Joseph C. Grigsby**  
+   4025 Johnson Ave, Western Springs, IL 60558  
+
+2. **Nathan Young**  
+   131 Mulberry Ct, Eudora, KS 66025  
+
+3. **Timothy Evanson**  
+   404 Clausen Ave, Western Springs, IL 60558  
+
+---
+
+## Purpose
+
+- Charitable  
+- Educational  
+- Any purpose permitted to be exempt from taxation under Section 501(c) of the Internal Revenue Code  
+- Any purpose that would qualify for tax-deductible gifts under Section 170(c) of the Internal Revenue Code  
+
+---
+
+## Interrogatories
+
+- Condominium Association: **No**  
+- Cooperative Housing Corporation: **No**  
+- Homeowners Association: **No**
+
+---
+
+## Attestation
+
+- **Name:** Joseph C. Grigsby  
+- **Address:** 4025 Johnson Ave  
+- **City:** Western Springs  
+- **State:** Illinois  
+- **ZIP:** 60558-0000  
+
+---
+
+## Status
+
+- Information reviewed and ready for submission
+
+----
+
+# Board of Directors
+
+## Joseph C Grigsby, 4025 Johnson Ave, Western Springs, Il 60558
+
+## Nathan Young, 1311 Mulberry Ct, Eudora KS, 66025
+
+## Timothy Eavenson, 4040 Clausen Ave, Western Springs, Il 60558
