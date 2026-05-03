@@ -442,7 +442,7 @@
       border-top: 1px solid var(--border);
     }
     .footer-grid {
-      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
       gap: 60px; margin-bottom: 64px;
     }
     .footer-brand img { height: 40px; filter: invert(1); margin-bottom: 16px; }
@@ -484,6 +484,72 @@
       font-family: var(--serif); font-style: italic; font-size: clamp(32px, 5vw, 60px);
       font-weight: 300; color: var(--fg); text-align: center; padding: 40px;
       line-height: 1.15;
+    }
+
+    /* CULTURE / ARTICLE */
+    .culture { background: var(--bg-warm); }
+    .culture-inner { max-width: 1200px; margin: 0 auto; }
+    .culture-header { margin-bottom: 64px; }
+    .article-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 80px; align-items: start; }
+    .article-card {
+      background: var(--bg-card); padding: 56px 52px;
+      border-top: 2px solid var(--amber);
+    }
+    .article-date {
+      font-family: var(--sans); font-size: 11px; font-weight: 500;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--fg-dim); margin-bottom: 20px;
+    }
+    .article-title {
+      font-family: var(--serif); font-weight: 400;
+      font-size: clamp(26px, 3vw, 38px); line-height: 1.15;
+      margin-bottom: 12px;
+    }
+    .article-dek {
+      font-family: var(--serif); font-style: italic; font-size: 18px;
+      font-weight: 300; color: var(--fg-muted); margin-bottom: 36px;
+      line-height: 1.5;
+    }
+    .article-body {
+      font-family: var(--serif); font-size: 17px; font-weight: 300;
+      color: var(--fg-muted); line-height: 1.85;
+    }
+    .article-body p { margin-bottom: 22px; }
+    .article-body p:last-child { margin-bottom: 0; }
+    .article-body strong { font-weight: 600; color: var(--fg); }
+    .article-body em { font-style: italic; color: var(--fg); }
+    .article-sidebar { display: flex; flex-direction: column; gap: 2px; }
+    .sidebar-callout {
+      background: var(--bg-card); padding: 32px 28px;
+      border-left: 2px solid var(--amber);
+    }
+    .sidebar-callout-label {
+      font-family: var(--sans); font-size: 10px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--amber); margin-bottom: 12px;
+    }
+    .sidebar-callout-text {
+      font-family: var(--serif); font-style: italic; font-size: 20px;
+      font-weight: 300; line-height: 1.4; color: var(--fg);
+    }
+    .sidebar-meta {
+      background: var(--bg-card); padding: 28px;
+    }
+    .sidebar-meta-label {
+      font-family: var(--sans); font-size: 10px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--fg-dim); margin-bottom: 16px;
+    }
+    .sidebar-meta ul {
+      list-style: none; display: flex; flex-direction: column; gap: 8px;
+    }
+    .sidebar-meta ul li {
+      font-family: var(--sans); font-size: 13px; font-weight: 300;
+      color: var(--fg-muted); padding-left: 12px; position: relative;
+    }
+    .sidebar-meta ul li::before {
+      content: ''; position: absolute; left: 0; top: 9px;
+      width: 4px; height: 1px; background: var(--amber);
     }
 
     /* MOBILE */
@@ -529,6 +595,9 @@
       footer { padding: 48px 24px 28px; }
       .footer-grid { grid-template-columns: 1fr; gap: 32px; }
       .footer-bottom { flex-direction: column; gap: 10px; text-align: center; }
+
+      .article-grid { grid-template-columns: 1fr; gap: 32px; }
+      .article-card { padding: 32px 24px; }
     }
   </style>
 </head>
@@ -542,6 +611,7 @@
   <div class="nav-links">
     <a href="#mission">Mission</a>
     <a href="#programs">Programs</a>
+    <a href="#culture">Culture</a>
     <a href="#join" class="nav-cta" style="color: rgb(254, 254, 254)">Get Involved</a>
   </div>
 </nav>
@@ -706,7 +776,7 @@ function App({ tweaks }) {
         <div className="hero-vignette"></div>
         <div className="hero-content">
           <div className="hero-eyebrow">A Nonprofit Platform for Independent Songwriters</div>
-          <h1 className="hero-title">For the <em>Song.</em></h1>
+          <h1 className="hero-title"><em>for the song.</em></h1>
           <p className="hero-sub" style={{ color: "rgb(255, 250, 250)", opacity: "0.5" }}>AmpliFi connects artists, venues, fans, and partners into a unified ecosystem, removing barriers and building pathways to a sustainable creative life.</p>
           <div className="hero-actions">
             <a className="btn-primary" href="#join">Get Involved</a>
@@ -837,6 +907,72 @@ function App({ tweaks }) {
         </div>
       </section>
 
+      {/* CULTURE */}
+      <section id="culture" className="culture">
+        <div className="culture-inner">
+          <div className="culture-header">
+            <div className="section-label">Culture</div>
+            <h2 className="section-title">The Conversation<br /><em>Worth Having</em></h2>
+          </div>
+          <div className="article-grid">
+            <div className="article-card">
+              <div className="article-date">May 2026</div>
+              <h3 className="article-title">The New York Times Named the 30 Greatest Living American Songwriters. The List Is Worth the Argument.</h3>
+              <p className="article-dek">The craft finally gets a headline. What it says — and what it misses — matters.</p>
+              <div className="article-body">
+                <p>The New York Times published a list this week. Thirty names. Greatest living American songwriters. A panel of six journalists, input from roughly 250 people in music, and enough debate to fill the comments section of every music publication on the internet.</p>
+                <p>Go ahead and read it. Then argue with it. That's partly the point.</p>
+                <p>Willie Nelson is on it. So is Dolly Parton, Lucinda Williams, Bob Dylan, Paul Simon, Carole King, Stevie Wonder, Bruce Springsteen, Kendrick Lamar, Jay-Z, Taylor Swift, Fiona Apple, Lana Del Rey. Country sits alongside hip-hop alongside folk alongside pop — which is, accurately, where American songwriting actually lives.</p>
+                <p>The list has real flaws. None of the six Times journalists who built it work in country music, and it shows around the edges. Josh Osborne, Brandy Clark, and Shane McAnally are grouped into a single shared slot — a gesture toward Nashville's current generation that reads more like a checkbox than a reckoning. The Love Junkies — Lori McKenna, Liz Rose, Hillary Lindsey — are absent entirely, which is a harder omission to explain. James McMurtry, arguably the finest pure craftsman working in American vernacular songwriting today, isn't on it. Tom Waits got an honorable mention. An honorable mention.</p>
+                <p>The "American only" rule does real damage. It keeps Joni Mitchell and Neil Young off a list about the songwriters who shaped American music most. Thirty slots for all of American songwriting — across every genre, every generation still living — was always going to be an impossible box. Fifty would have been closer to honest.</p>
+                <p>But here's what the argument misses: <strong>the list did something.</strong></p>
+                <p>It put the word <em>songwriter</em> in a headline at the New York Times. It forced a serious cultural conversation about craft — about who writes the songs, what it takes, why it matters. It named Lucinda Williams in the same breath as Kendrick Lamar. It treated songwriting as a discipline worthy of serious critical attention, not just a footnote to the performance.</p>
+                <p>For the tens of thousands of independent singer-songwriters working right now — playing small rooms, building catalogs nobody's heard yet, doing the actual work without the infrastructure to support it — that framing is not nothing.</p>
+                <p>The problem was never whether Taylor Swift belongs on a list with Bob Dylan. The problem is the structural invisibility of the songwriter's life. The gap between great songs and sustainable careers. The fact that a songwriter can write something that outlasts them and still not be able to afford a recording session.</p>
+                <p>Lists like this one don't solve that. But they remind people that the craft is real, that the people doing it are real, and that the work deserves more than the algorithmic grind that currently passes for a music career.</p>
+                <p>That's the conversation worth having. Not whether thirty was enough slots.</p>
+                <p><em>For the song.</em></p>
+              </div>
+            </div>
+            <div className="article-sidebar">
+              <div className="sidebar-callout">
+                <div className="sidebar-callout-label">Pull Quote</div>
+                <div className="sidebar-callout-text">"A songwriter can write something that outlasts them and still not be able to afford a recording session."</div>
+              </div>
+              <div className="sidebar-meta" style={{marginTop:'2px'}}>
+                <div className="sidebar-meta-label">On the NYT List</div>
+                <ul>
+                  <li>Willie Nelson</li>
+                  <li>Dolly Parton</li>
+                  <li>Lucinda Williams</li>
+                  <li>Bob Dylan</li>
+                  <li>Paul Simon</li>
+                  <li>Carole King</li>
+                  <li>Stevie Wonder</li>
+                  <li>Bruce Springsteen</li>
+                  <li>Kendrick Lamar</li>
+                  <li>Taylor Swift</li>
+                  <li>Fiona Apple</li>
+                  <li>Jay-Z, Missy Elliott</li>
+                  <li>Outkast, Lana Del Rey</li>
+                  <li>+ more</li>
+                </ul>
+              </div>
+              <div className="sidebar-meta" style={{marginTop:'2px'}}>
+                <div className="sidebar-meta-label">Worth Noting</div>
+                <ul>
+                  <li>Love Junkies not included</li>
+                  <li>James McMurtry absent</li>
+                  <li>Tom Waits: honorable mention</li>
+                  <li>US artists only</li>
+                  <li>30 slots for all genres</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* FOOTER */}
       <footer>
         <div className="footer-grid">
@@ -860,6 +996,12 @@ function App({ tweaks }) {
               <li><a href="#join">For Venues</a></li>
               <li><a href="#join">For Fans</a></li>
               <li><a href="#join">For Donors</a></li>
+            </ul>
+          </div>
+          <div className="footer-col">
+            <h4>Culture</h4>
+            <ul>
+              <li><a href="#culture">Latest Articles</a></li>
             </ul>
           </div>
           <div className="footer-col">
