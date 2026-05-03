@@ -496,10 +496,10 @@
 
       /* Hero: hide background image, use solid dark bg, stack content from top */
       .hero {
-        height: auto !important; min-height: 0 !important;
+        height: auto; min-height: 0;
         background: var(--bg);
-        padding: 80px 20px 48px !important;
-        justify-content: flex-start !important;
+        padding: 76px 20px 48px;
+        justify-content: flex-start;
       }
       .hero-bg { display: none; }
       .hero-vignette { display: none; }
@@ -701,7 +701,7 @@ function App({ tweaks }) {
   return (
     <div>
       {/* HERO */}
-      <section id="hero" style={{ position: 'relative', height: '100vh', minHeight: '700px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'flex-end', padding: '0 80px 96px', overflow: 'hidden' }}>
+      <section id="hero" className="hero">
         <div className={`hero-bg${bgLoaded ? ' loaded' : ''}`} style={{ backgroundImage: `url('${heroImg}')` }}></div>
         <div className="hero-vignette"></div>
         <div className="hero-content">
