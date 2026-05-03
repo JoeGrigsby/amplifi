@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Culture — AmpliFi</title>
+  <link rel="icon" type="image/jpeg" href="assets/FavIcon.jpg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: oklch(11% 0.012 55);
+      --bg-warm: oklch(14% 0.015 55);
+      --bg-card: oklch(16% 0.015 55);
+      --fg: oklch(94% 0.008 65);
+      --fg-muted: oklch(65% 0.01 65);
+      --fg-dim: oklch(45% 0.01 65);
+      --amber: oklch(70% 0.13 65);
+      --amber-dim: oklch(55% 0.10 65);
+      --amber-glow: oklch(70% 0.13 65 / 0.15);
+      --serif: 'Cormorant Garamond', Georgia, serif;
+      --sans: 'DM Sans', system-ui, sans-serif;
+      --border: oklch(25% 0.01 55);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    ::selection { background: var(--amber); color: var(--bg); }
+    img { display: block; max-width: 100%; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 48px;
+      background: oklch(11% 0.012 55 / 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; }
+    .nav-logo img { height: 80px !important; width: auto !important; filter: invert(1); display: block !important; object-fit: contain; }
+    .nav-links { display: flex; gap: 32px; align-items: center; }
+    .nav-links a {
+      color: var(--fg-muted); text-decoration: none;
+      font-family: var(--sans); font-size: 13px; letter-spacing: 0.08em;
+      text-transform: uppercase; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--fg); }
+    .nav-cta {
+      background: var(--amber); color: var(--bg) !important;
+      padding: 9px 22px; border-radius: 2px;
+      font-size: 13px; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .nav-cta:hover { opacity: 0.85; }
+
+    /* PAGE HEADER */
+    .page-header {
+      padding: 160px 80px 72px;
+      background: var(--bg-warm);
+      border-bottom: 1px solid var(--border);
+    }
+    .page-header-inner { max-width: 1200px; margin: 0 auto; }
+    .section-label {
+      font-family: var(--sans); font-size: 11px; font-weight: 600;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--amber); margin-bottom: 20px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .section-label::before {
+      content: ''; display: block; width: 32px; height: 1px; background: var(--amber);
+    }
+    .page-title {
+      font-family: var(--serif); font-weight: 300;
+      font-size: clamp(48px, 6vw, 80px); line-height: 1.0;
+      letter-spacing: -0.01em;
+    }
+    .page-title em { font-style: italic; color: var(--amber); }
+
+    /* ARTICLE LAYOUT */
+    .article-wrap {
+      padding: 80px 80px;
+      max-width: 1200px; margin: 0 auto;
+    }
+    .article-grid {
+      display: grid; grid-template-columns: 2fr 1fr; gap: 80px; align-items: start;
+    }
+    .article-card {
+      background: var(--bg-card); padding: 56px 52px;
+      border-top: 2px solid var(--amber);
+    }
+    .article-date {
+      font-family: var(--sans); font-size: 11px; font-weight: 500;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--fg-dim); margin-bottom: 20px;
+    }
+    .article-title {
+      font-family: var(--serif); font-weight: 400;
+      font-size: clamp(26px, 3vw, 40px); line-height: 1.15;
+      margin-bottom: 12px;
+    }
+    .article-dek {
+      font-family: var(--serif); font-style: italic; font-size: 19px;
+      font-weight: 300; color: var(--fg-muted); margin-bottom: 40px;
+      padding-bottom: 40px; border-bottom: 1px solid var(--border);
+      line-height: 1.5;
+    }
+    .article-body {
+      font-family: var(--serif); font-size: 18px; font-weight: 300;
+      color: var(--fg-muted); line-height: 1.9;
+    }
+    .article-body p { margin-bottom: 24px; }
+    .article-body p:last-child { margin-bottom: 0; }
+    .article-body strong { font-weight: 600; color: var(--fg); }
+    .article-body em { font-style: italic; color: var(--fg); }
+
+    /* SIDEBAR */
+    .article-sidebar { display: flex; flex-direction: column; gap: 2px; position: sticky; top: 120px; }
+    .sidebar-callout {
+      background: var(--bg-card); padding: 32px 28px;
+      border-left: 2px solid var(--amber);
+    }
+    .sidebar-callout-label {
+      font-family: var(--sans); font-size: 10px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--amber); margin-bottom: 12px;
+    }
+    .sidebar-callout-text {
+      font-family: var(--serif); font-style: italic; font-size: 20px;
+      font-weight: 300; line-height: 1.4; color: var(--fg);
+    }
+    .sidebar-meta { background: var(--bg-card); padding: 28px; }
+    .sidebar-meta-label {
+      font-family: var(--sans); font-size: 10px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--fg-dim); margin-bottom: 16px;
+    }
+    .sidebar-meta ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .sidebar-meta ul li {
+      font-family: var(--sans); font-size: 13px; font-weight: 300;
+      color: var(--fg-muted); padding-left: 12px; position: relative;
+    }
+    .sidebar-meta ul li::before {
+      content: ''; position: absolute; left: 0; top: 9px;
+      width: 4px; height: 1px; background: var(--amber);
+    }
+
+    /* BACK LINK */
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--sans); font-size: 12px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--fg-dim); text-decoration: none;
+      margin-bottom: 56px; transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--amber); }
+
+    /* FOOTER */
+    footer {
+      background: oklch(9% 0.01 55);
+      padding: 80px 80px 40px;
+      border-top: 1px solid var(--border);
+      margin-top: 80px;
+    }
+    .footer-grid {
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+      gap: 60px; margin-bottom: 64px;
+    }
+    .footer-brand img { height: 40px; filter: invert(1); margin-bottom: 16px; }
+    .footer-brand p {
+      font-family: var(--sans); font-size: 14px; font-weight: 300;
+      color: var(--fg-muted); line-height: 1.7; max-width: 280px;
+    }
+    .footer-col h4 {
+      font-family: var(--sans); font-size: 11px; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase; color: var(--fg-dim);
+      margin-bottom: 20px;
+    }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer-col ul li a {
+      font-family: var(--sans); font-size: 14px; font-weight: 300;
+      color: var(--fg-muted); text-decoration: none; transition: color 0.2s;
+    }
+    .footer-col ul li a:hover { color: var(--amber); }
+    .footer-bottom {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 32px; border-top: 1px solid var(--border);
+      font-family: var(--sans); font-size: 12px; color: var(--fg-dim);
+    }
+    .footer-bottom a { color: var(--fg-dim); text-decoration: none; }
+    .footer-bottom a:hover { color: var(--amber); }
+
+    /* MOBILE */
+    @media (max-width: 768px) {
+      nav { padding: 14px 20px; }
+      .nav-links a:not(.nav-cta) { display: none; }
+      .nav-cta { padding: 8px 16px; font-size: 12px; }
+      .nav-logo img { height: 48px !important; }
+
+      .page-header { padding: 120px 24px 48px; }
+      .article-wrap { padding: 40px 24px; }
+      .article-grid { grid-template-columns: 1fr; gap: 32px; }
+      .article-card { padding: 32px 24px; }
+      .article-sidebar { position: static; }
+
+      footer { padding: 48px 24px 28px; }
+      .footer-grid { grid-template-columns: 1fr; gap: 32px; }
+      .footer-bottom { flex-direction: column; gap: 10px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <a href="index.html"><img src="assets/AmpliFiLogo.png" alt="AmpliFi" style="width:100px;height:1px" /></a>
+  </div>
+  <div class="nav-links">
+    <a href="index.html#mission">Mission</a>
+    <a href="index.html#programs">Programs</a>
+    <a href="culture.html" class="active">Culture</a>
+    <a href="index.html#join" class="nav-cta">Get Involved</a>
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="section-label">Culture</div>
+    <h1 class="page-title">The Conversation<br /><em>Worth Having</em></h1>
+  </div>
+</div>
+
+<!-- ARTICLE -->
+<div class="article-wrap">
+  <a class="back-link" href="culture.html">← All Articles</a>
+  <div class="article-grid">
+
+    <div class="article-card">
+      <div class="article-date">May 2026</div>
+      <h2 class="article-title">The New York Times Named the 30 Greatest Living American Songwriters. The List Is Worth the Argument.</h2>
+      <p class="article-dek">The craft finally gets a headline. What it says — and what it misses — matters.</p>
+      <div class="article-body">
+        <p>The New York Times published a list this week. Thirty names. Greatest living American songwriters. A panel of six journalists, input from roughly 250 people in music, and enough debate to fill the comments section of every music publication on the internet.</p>
+        <p>Go ahead and read it. Then argue with it. That's partly the point.</p>
+        <p>Willie Nelson is on it. So is Dolly Parton, Lucinda Williams, Bob Dylan, Paul Simon, Carole King, Stevie Wonder, Bruce Springsteen, Kendrick Lamar, Jay-Z, Taylor Swift, Fiona Apple, Lana Del Rey. Country sits alongside hip-hop alongside folk alongside pop — which is, accurately, where American songwriting actually lives.</p>
+        <p>The list has real flaws. None of the six Times journalists who built it work in country music, and it shows around the edges. Josh Osborne, Brandy Clark, and Shane McAnally are grouped into a single shared slot — a gesture toward Nashville's current generation that reads more like a checkbox than a reckoning. The Love Junkies — Lori McKenna, Liz Rose, Hillary Lindsey — are absent entirely, which is a harder omission to explain. James McMurtry, arguably the finest pure craftsman working in American vernacular songwriting today, isn't on it. Tom Waits got an honorable mention. An honorable mention.</p>
+        <p>The "American only" rule does real damage. It keeps Joni Mitchell and Neil Young off a list about the songwriters who shaped American music most. Thirty slots for all of American songwriting — across every genre, every generation still living — was always going to be an impossible box. Fifty would have been closer to honest.</p>
+        <p>But here's what the argument misses: <strong>the list did something.</strong></p>
+        <p>It put the word <em>songwriter</em> in a headline at the New York Times. It forced a serious cultural conversation about craft — about who writes the songs, what it takes, why it matters. It named Lucinda Williams in the same breath as Kendrick Lamar. It treated songwriting as a discipline worthy of serious critical attention, not just a footnote to the performance.</p>
+        <p>For the tens of thousands of independent singer-songwriters working right now — playing small rooms, building catalogs nobody's heard yet, doing the actual work without the infrastructure to support it — that framing is not nothing.</p>
+        <p>The problem was never whether Taylor Swift belongs on a list with Bob Dylan. The problem is the structural invisibility of the songwriter's life. The gap between great songs and sustainable careers. The fact that a songwriter can write something that outlasts them and still not be able to afford a recording session.</p>
+        <p>Lists like this one don't solve that. But they remind people that the craft is real, that the people doing it are real, and that the work deserves more than the algorithmic grind that currently passes for a music career.</p>
+        <p>That's the conversation worth having. Not whether thirty was enough slots.</p>
+        <p><em>For the song.</em></p>
+      </div>
+    </div>
+
+    <div class="article-sidebar">
+      <div class="sidebar-callout">
+        <div class="sidebar-callout-label">Pull Quote</div>
+        <div class="sidebar-callout-text">"A songwriter can write something that outlasts them and still not be able to afford a recording session."</div>
+      </div>
+      <div class="sidebar-meta" style="margin-top:2px">
+        <div class="sidebar-meta-label">On the NYT List</div>
+        <ul>
+          <li>Willie Nelson</li>
+          <li>Dolly Parton</li>
+          <li>Lucinda Williams</li>
+          <li>Bob Dylan</li>
+          <li>Paul Simon</li>
+          <li>Carole King</li>
+          <li>Stevie Wonder</li>
+          <li>Bruce Springsteen</li>
+          <li>Kendrick Lamar</li>
+          <li>Taylor Swift</li>
+          <li>Fiona Apple</li>
+          <li>Jay-Z, Missy Elliott</li>
+          <li>Outkast, Lana Del Rey</li>
+          <li>+ more</li>
+        </ul>
+      </div>
+      <div class="sidebar-meta" style="margin-top:2px">
+        <div class="sidebar-meta-label">Worth Noting</div>
+        <ul>
+          <li>Love Junkies not included</li>
+          <li>James McMurtry absent</li>
+          <li>Tom Waits: honorable mention</li>
+          <li>US artists only</li>
+          <li>30 slots for all genres</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <img src="assets/AmpliFiLogo.png" alt="AmpliFi" style="height:40px;width:auto;filter:invert(1)" />
+      <p>A nonprofit platform building the ecosystem for independent songwriters — from creation to career.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Programs</h4>
+      <ul>
+        <li><a href="index.html#programs">Songwriter Collectives</a></li>
+        <li><a href="index.html#programs">Songwriter Trail</a></li>
+        <li><a href="index.html#programs">Studio Network</a></li>
+        <li><a href="index.html#programs">Merch &amp; Revenue</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Get Involved</h4>
+      <ul>
+        <li><a href="index.html#join">For Artists</a></li>
+        <li><a href="index.html#join">For Venues</a></li>
+        <li><a href="index.html#join">For Fans</a></li>
+        <li><a href="index.html#join">For Donors</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Culture</h4>
+      <ul>
+        <li><a href="culture.html">Latest Articles</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Organization</h4>
+      <ul>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Board &amp; Team</a></li>
+        <li><a href="#">Contact</a></li>
+        <li><a href="#">Donate</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 AmpliFi. All rights reserved. 501(c)(3) Nonprofit.</span>
+    <span><a href="#">Privacy</a> · <a href="#">Terms</a></span>
+  </div>
+</footer>
+
+</body>
+</html>
