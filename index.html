@@ -266,6 +266,17 @@
       overflow: hidden;
     }
     .program-card.full { grid-column: 1 / -1; grid-template-columns: 2fr 1fr; }
+    .program-card.info-only { grid-template-columns: 1fr; }
+    .program-card.full.info-only { grid-template-columns: 1fr; }
+    .program-sign-in {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--sans); font-size: 10px; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--fg-dim); margin-top: 20px;
+    }
+    .program-sign-in::before {
+      content: '🔒'; font-size: 10px;
+    }
     .program-img {
       aspect-ratio: 1; overflow: hidden; position: relative;
     }
@@ -485,10 +496,10 @@
 
       /* Hero: hide background image, use solid dark bg, stack content from top */
       .hero {
-        height: auto; min-height: 0;
+        height: auto !important; min-height: 0 !important;
         background: var(--bg);
-        padding: 96px 24px 52px;
-        justify-content: flex-start;
+        padding: 80px 20px 48px !important;
+        justify-content: flex-start !important;
       }
       .hero-bg { display: none; }
       .hero-vignette { display: none; }
@@ -695,7 +706,7 @@ function App({ tweaks }) {
         <div className="hero-vignette"></div>
         <div className="hero-content">
           <div className="hero-eyebrow">A Nonprofit Platform for Independent Songwriters</div>
-          <h1 className="hero-title">Where the<br />Song <em>Lives.</em></h1>
+          <h1 className="hero-title">For the <em>Song.</em></h1>
           <p className="hero-sub" style={{ color: "rgb(255, 250, 250)", opacity: "0.5" }}>AmpliFi connects artists, venues, fans, and partners into a unified ecosystem, removing barriers and building pathways to a sustainable creative life.</p>
           <div className="hero-actions">
             <a className="btn-primary" href="#join">Get Involved</a>
@@ -747,6 +758,28 @@ function App({ tweaks }) {
                 <div className="program-name">Songwriter Collectives</div>
                 <div className="program-desc">Identity and community hubs for artists — from the Gruene Songwriters Collective outward. A home base and a creative tribe.</div>
                 <a className="program-link" href="https://thegruenesongwriterscollective.com/" target="_blank" rel="noopener noreferrer">Visit the Collective →</a>
+              </div>
+            </div>
+            <div className="program-card info-only">
+              <div className="program-info">
+                <div className="program-tag">Infrastructure</div>
+                <div className="program-name">The Songwriter Trail</div>
+                <div className="program-desc">A connected network of venues, cities, and listening rooms that gives independent songwriters a living touring circuit — turning one-off shows into a sustainable path.</div>
+              </div>
+            </div>
+            <div className="program-card info-only">
+              <div className="program-info">
+                <div className="program-tag">Resources</div>
+                <div className="program-name">The Studio Network</div>
+                <div className="program-desc">Vetted recording studios, producers, and engineers connected to the AmpliFi ecosystem — giving songwriters access to professional-grade production at every stage of their career.</div>
+              </div>
+            </div>
+            <div className="program-card full info-only">
+              <div className="program-info">
+                <div className="program-tag">Education</div>
+                <div className="program-name">Knowledge Hub</div>
+                <div className="program-desc">A growing library of guides, workshops, and industry resources curated for independent songwriters — covering licensing, publishing, touring, and the business of music.</div>
+                <div className="program-sign-in">Sign-in required to access</div>
               </div>
             </div>
           </div>
