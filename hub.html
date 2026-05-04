@@ -527,7 +527,7 @@
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
   import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, serverTimestamp }
     from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-  import { getAuth, signInWithCredential, GoogleAuthProvider, signOut }
+  import { getAuth, signInWithCredential, GoogleAuthProvider, signOut, onAuthStateChanged }
     from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 
   // ── FIREBASE ──────────────────────────────────────────
@@ -572,21 +572,18 @@
       err.style.display = 'block';
       return;
     }
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+      name: payload.name,
+      email: payload.email,
+      picture: payload.picture
+    }));
     const credential = GoogleAuthProvider.credential(response.credential);
-    signInWithCredential(auth, credential)
-      .then(() => {
-        sessionStorage.setItem(SESSION_KEY, JSON.stringify({
-          name: payload.name,
-          email: payload.email,
-          picture: payload.picture
-        }));
-        showDashboard(payload);
-      })
-      .catch(err => {
-        const el = document.getElementById('gate-error');
-        el.textContent = 'Authentication error: ' + err.message;
-        el.style.display = 'block';
-      });
+    signInWithCredential(auth, credential).catch(err => {
+      const el = document.getElementById('gate-error');
+      el.textContent = 'Authentication error: ' + err.message;
+      el.style.display = 'block';
+    });
+    // onAuthStateChanged below will call showDashboard once auth is confirmed
   };
 
   window.logout = function() {
@@ -595,10 +592,14 @@
     location.reload();
   };
 
-  window.addEventListener('load', () => {
-    const stored = sessionStorage.getItem(SESSION_KEY);
-    if (stored) {
-      try { showDashboard(JSON.parse(stored)); return; } catch {}
+  // Single source of truth for showing the dashboard — fires on load and on sign-in/out
+  onAuthStateChanged(auth, firebaseUser => {
+    if (firebaseUser) {
+      const stored = sessionStorage.getItem(SESSION_KEY);
+      const user = stored ? JSON.parse(stored) : { name: firebaseUser.displayName };
+      if (document.getElementById('gate').style.display !== 'none') {
+        showDashboard(user);
+      }
     }
   });
 
