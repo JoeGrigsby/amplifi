@@ -9,6 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -524,8 +526,17 @@
 </div>
 
 <script>
-  const ACTIONS_KEY = 'amplifi_actions';
-  const LEDGER_KEY  = 'amplifi_ledger';
+  // ── FIREBASE ──────────────────────────────────────────
+  const firebaseConfig = {
+    apiKey:            "AIzaSyBssAA6IWFxGZ42hNTK8-7xI_2khb_7W7Y",
+    authDomain:        "amplifi-1ade7.firebaseapp.com",
+    projectId:         "amplifi-1ade7",
+    storageBucket:     "amplifi-1ade7.firebasestorage.app",
+    messagingSenderId: "1010574448347",
+    appId:             "1:1010574448347:web:116a67a05f31db27a35efe"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
   let editingActionId = null;
   let editingLedgerId = null;
@@ -639,13 +650,6 @@
   }
 
   // ── ACTIONS ───────────────────────────────────────────
-  function getActions() {
-    return JSON.parse(localStorage.getItem(ACTIONS_KEY) || '[]');
-  }
-  function setActions(data) {
-    localStorage.setItem(ACTIONS_KEY, JSON.stringify(data));
-  }
-
   const STATUS_LABELS = {
     open: 'Open', progress: 'In Progress', complete: 'Complete', blocked: 'Blocked'
   };
@@ -653,32 +657,37 @@
     open: 'badge-open', progress: 'badge-progress', complete: 'badge-complete', blocked: 'badge-blocked'
   };
 
-  function renderActions() {
-    const actions = getActions();
+  async function renderActions() {
     const tbody = document.getElementById('actions-tbody');
     const empty = document.getElementById('actions-empty');
     const table = document.getElementById('actions-table');
-    if (!actions.length) {
-      table.style.display = 'none';
-      empty.style.display = 'block';
-      return;
+    try {
+      const snapshot = await db.collection('actions').orderBy('createdAt', 'asc').get();
+      const actions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      if (!actions.length) {
+        table.style.display = 'none';
+        empty.style.display = 'block';
+        return;
+      }
+      table.style.display = 'table';
+      empty.style.display = 'none';
+      tbody.innerHTML = actions.map(a => `
+        <tr>
+          <td style="color:var(--fg);font-weight:400;max-width:260px">${esc(a.item)}</td>
+          <td>${esc(a.owner)}</td>
+          <td><span class="badge ${STATUS_CLASSES[a.status]}">${STATUS_LABELS[a.status]}</span></td>
+          <td>${a.due ? fmtDate(a.due) : '<span style="color:var(--fg-dim)">—</span>'}</td>
+          <td style="max-width:220px;color:var(--fg-muted)">${esc(a.notes)}</td>
+          <td>
+            <div class="row-actions">
+              <button class="btn-row btn-edit" onclick="editAction('${a.id}')">Edit</button>
+              <button class="btn-row btn-delete" onclick="deleteAction('${a.id}')">Delete</button>
+            </div>
+          </td>
+        </tr>`).join('');
+    } catch (err) {
+      console.error('Error loading actions:', err);
     }
-    table.style.display = 'table';
-    empty.style.display = 'none';
-    tbody.innerHTML = actions.map((a, i) => `
-      <tr>
-        <td style="color:var(--fg);font-weight:400;max-width:260px">${esc(a.item)}</td>
-        <td>${esc(a.owner)}</td>
-        <td><span class="badge ${STATUS_CLASSES[a.status]}">${STATUS_LABELS[a.status]}</span></td>
-        <td>${a.due ? fmtDate(a.due) : '<span style="color:var(--fg-dim)">—</span>'}</td>
-        <td style="max-width:220px;color:var(--fg-muted)">${esc(a.notes)}</td>
-        <td>
-          <div class="row-actions">
-            <button class="btn-row btn-edit" onclick="editAction(${i})">Edit</button>
-            <button class="btn-row btn-delete" onclick="deleteAction(${i})">Delete</button>
-          </div>
-        </td>
-      </tr>`).join('');
   }
 
   function openActionModal(reset = true) {
@@ -699,10 +708,10 @@
     document.getElementById('action-modal').classList.remove('show');
   }
 
-  function editAction(i) {
-    const actions = getActions();
-    const a = actions[i];
-    editingActionId = i;
+  async function editAction(id) {
+    const doc = await db.collection('actions').doc(id).get();
+    const a = doc.data();
+    editingActionId = id;
     document.getElementById('action-modal-title').textContent = 'Edit Action Item';
     document.getElementById('a-item').value = a.item;
     document.getElementById('a-owner').value = a.owner;
@@ -712,83 +721,78 @@
     openActionModal(false);
   }
 
-  function saveAction() {
+  async function saveAction() {
     const item = document.getElementById('a-item').value.trim();
     if (!item) { document.getElementById('a-item').focus(); return; }
     const entry = {
       item,
-      owner: document.getElementById('a-owner').value.trim(),
-      due:   document.getElementById('a-due').value,
-      status:document.getElementById('a-status').value,
-      notes: document.getElementById('a-notes').value.trim()
+      owner:  document.getElementById('a-owner').value.trim(),
+      due:    document.getElementById('a-due').value,
+      status: document.getElementById('a-status').value,
+      notes:  document.getElementById('a-notes').value.trim()
     };
-    const actions = getActions();
     if (editingActionId !== null) {
-      actions[editingActionId] = entry;
+      await db.collection('actions').doc(editingActionId).update(entry);
     } else {
-      actions.push(entry);
+      entry.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      await db.collection('actions').add(entry);
     }
-    setActions(actions);
     closeActionModal();
     renderActions();
   }
 
-  function deleteAction(i) {
+  async function deleteAction(id) {
     if (!confirm('Delete this action item?')) return;
-    const actions = getActions();
-    actions.splice(i, 1);
-    setActions(actions);
+    await db.collection('actions').doc(id).delete();
     renderActions();
   }
 
   // ── LEDGER ────────────────────────────────────────────
-  function getLedger() {
-    return JSON.parse(localStorage.getItem(LEDGER_KEY) || '[]');
-  }
-  function setLedger(data) {
-    localStorage.setItem(LEDGER_KEY, JSON.stringify(data));
-  }
-
-  function renderLedger() {
-    const entries = getLedger();
+  async function renderLedger() {
     const tbody = document.getElementById('ledger-tbody');
     const empty = document.getElementById('ledger-empty');
+    try {
+      const snapshot = await db.collection('ledger').orderBy('date', 'asc').orderBy('createdAt', 'asc').get();
+      const entries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    let totalIncome = 0, totalExpense = 0;
-    entries.forEach(e => {
-      if (e.type === 'income') totalIncome += parseFloat(e.amount) || 0;
-      else totalExpense += parseFloat(e.amount) || 0;
-    });
-    const net = totalIncome - totalExpense;
+      let totalIncome = 0, totalExpense = 0;
+      entries.forEach(e => {
+        if (e.type === 'income') totalIncome += parseFloat(e.amount) || 0;
+        else totalExpense += parseFloat(e.amount) || 0;
+      });
+      const net = totalIncome - totalExpense;
 
-    document.getElementById('sum-income').textContent  = fmtMoney(totalIncome);
-    document.getElementById('sum-expense').textContent = fmtMoney(totalExpense);
-    const netEl = document.getElementById('sum-net');
-    netEl.textContent = (net >= 0 ? '' : '-') + fmtMoney(Math.abs(net));
-    netEl.className = 'summary-value net ' + (net >= 0 ? 'pos' : 'neg');
+      document.getElementById('sum-income').textContent  = fmtMoney(totalIncome);
+      document.getElementById('sum-expense').textContent = fmtMoney(totalExpense);
+      const netEl = document.getElementById('sum-net');
+      netEl.textContent = (net >= 0 ? '' : '-') + fmtMoney(Math.abs(net));
+      netEl.className = 'summary-value net ' + (net >= 0 ? 'pos' : 'neg');
 
-    if (!entries.length) {
-      tbody.innerHTML = '';
-      empty.style.display = 'block';
-      return;
+      if (!entries.length) {
+        tbody.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+      tbody.innerHTML = entries.map(e => `
+        <tr>
+          <td style="white-space:nowrap">${e.date ? fmtDate(e.date) : '—'}</td>
+          <td style="color:var(--fg);font-weight:400">${esc(e.purpose)}</td>
+          <td class="${e.type === 'income' ? 'amount-income' : 'amount-expense'}">
+            ${e.type === 'income' ? '+' : '-'}${fmtMoney(e.amount)}
+          </td>
+          <td><span class="badge ${e.type === 'income' ? 'badge-complete' : 'badge-blocked'}">${e.type}</span></td>
+          <td>${esc(e.source)}</td>
+          <td>
+            <div class="row-actions">
+              <button class="btn-row btn-edit" onclick="editLedger('${e.id}')">Edit</button>
+              <button class="btn-row btn-delete" onclick="deleteLedger('${e.id}')">Delete</button>
+            </div>
+          </td>
+        </tr>`).join('');
+    } catch (err) {
+      console.error('Error loading ledger:', err);
     }
-    empty.style.display = 'none';
-    tbody.innerHTML = entries.map((e, i) => `
-      <tr>
-        <td style="white-space:nowrap">${e.date ? fmtDate(e.date) : '—'}</td>
-        <td style="color:var(--fg);font-weight:400">${esc(e.purpose)}</td>
-        <td class="${e.type === 'income' ? 'amount-income' : 'amount-expense'}">
-          ${e.type === 'income' ? '+' : '-'}${fmtMoney(e.amount)}
-        </td>
-        <td><span class="badge ${e.type === 'income' ? 'badge-complete' : 'badge-blocked'}">${e.type}</span></td>
-        <td>${esc(e.source)}</td>
-        <td>
-          <div class="row-actions">
-            <button class="btn-row btn-edit" onclick="editLedger(${i})">Edit</button>
-            <button class="btn-row btn-delete" onclick="deleteLedger(${i})">Delete</button>
-          </div>
-        </td>
-      </tr>`).join('');
   }
 
   function openLedgerModal(reset = true) {
@@ -809,10 +813,10 @@
     document.getElementById('ledger-modal').classList.remove('show');
   }
 
-  function editLedger(i) {
-    const entries = getLedger();
-    const e = entries[i];
-    editingLedgerId = i;
+  async function editLedger(id) {
+    const doc = await db.collection('ledger').doc(id).get();
+    const e = doc.data();
+    editingLedgerId = id;
     document.getElementById('ledger-modal-title').textContent = 'Edit Ledger Entry';
     document.getElementById('l-date').value = e.date;
     document.getElementById('l-type').value = e.type;
@@ -822,7 +826,7 @@
     openLedgerModal(false);
   }
 
-  function saveLedgerEntry() {
+  async function saveLedgerEntry() {
     const purpose = document.getElementById('l-purpose').value.trim();
     const amount  = document.getElementById('l-amount').value;
     if (!purpose) { document.getElementById('l-purpose').focus(); return; }
@@ -834,22 +838,19 @@
       amount:  parseFloat(amount).toFixed(2),
       source:  document.getElementById('l-source').value.trim()
     };
-    const entries = getLedger();
     if (editingLedgerId !== null) {
-      entries[editingLedgerId] = entry;
+      await db.collection('ledger').doc(editingLedgerId).update(entry);
     } else {
-      entries.push(entry);
+      entry.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      await db.collection('ledger').add(entry);
     }
-    setLedger(entries);
     closeLedgerModal();
     renderLedger();
   }
 
-  function deleteLedger(i) {
+  async function deleteLedger(id) {
     if (!confirm('Delete this ledger entry?')) return;
-    const entries = getLedger();
-    entries.splice(i, 1);
-    setLedger(entries);
+    await db.collection('ledger').doc(id).delete();
     renderLedger();
   }
 
