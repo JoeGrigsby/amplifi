@@ -9,8 +9,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -525,7 +523,13 @@
   </div>
 </div>
 
-<script>
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+  import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, serverTimestamp }
+    from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+  import { getAuth, signInWithCredential, GoogleAuthProvider, signOut, onAuthStateChanged }
+    from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+
   // ── FIREBASE ──────────────────────────────────────────
   const firebaseConfig = {
     apiKey:            "AIzaSyBssAA6IWFxGZ42hNTK8-7xI_2khb_7W7Y",
@@ -535,8 +539,9 @@
     messagingSenderId: "1010574448347",
     appId:             "1:1010574448347:web:116a67a05f31db27a35efe"
   };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
 
   let editingActionId = null;
   let editingLedgerId = null;
@@ -565,7 +570,7 @@
     initDashboard();
   }
 
-  function handleGoogleSignIn(response) {
+  window.handleGoogleSignIn = function(response) {
     const payload = parseJwt(response.credential);
     const err = document.getElementById('gate-error');
     if (!payload) {
@@ -583,28 +588,39 @@
       email: payload.email,
       picture: payload.picture
     }));
-    showDashboard(payload);
-  }
+    const credential = GoogleAuthProvider.credential(response.credential);
+    signInWithCredential(auth, credential).catch(err => {
+      const el = document.getElementById('gate-error');
+      el.textContent = 'Authentication error: ' + err.message;
+      el.style.display = 'block';
+    });
+    // onAuthStateChanged below will call showDashboard once auth is confirmed
+  };
 
-  function logout() {
+  window.logout = function() {
+    signOut(auth);
     sessionStorage.removeItem(SESSION_KEY);
     location.reload();
-  }
+  };
 
-  window.addEventListener('load', () => {
-    const stored = sessionStorage.getItem(SESSION_KEY);
-    if (stored) {
-      try { showDashboard(JSON.parse(stored)); return; } catch {}
+  // Single source of truth for showing the dashboard — fires on load and on sign-in/out
+  onAuthStateChanged(auth, firebaseUser => {
+    if (firebaseUser) {
+      const stored = sessionStorage.getItem(SESSION_KEY);
+      const user = stored ? JSON.parse(stored) : { name: firebaseUser.displayName };
+      if (document.getElementById('gate').style.display !== 'none') {
+        showDashboard(user);
+      }
     }
   });
 
   // ── TABS ──────────────────────────────────────────────
-  function showTab(name) {
+  window.showTab = function(name) {
     document.querySelectorAll('.dash-section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.dash-tab').forEach(b => b.classList.remove('active'));
     document.getElementById('sec-' + name).classList.add('active');
     document.getElementById('tab-btn-' + name).classList.add('active');
-  }
+  };
 
   // ── INIT ──────────────────────────────────────────────
   function initDashboard() {
@@ -638,7 +654,7 @@
     }
   }
 
-  async function openFile(filename, displayName) {
+  window.openFile = async function(filename, displayName) {
     const viewer = document.getElementById('file-viewer');
     const fileList = document.getElementById('files-list');
     const body = document.getElementById('file-viewer-body');
@@ -653,12 +669,12 @@
     } catch {
       body.textContent = 'Unable to load file.';
     }
-  }
+  };
 
-  function closeFile() {
+  window.closeFile = function() {
     document.getElementById('file-viewer').classList.remove('show');
     document.getElementById('files-list').classList.remove('hide');
-  }
+  };
 
   // ── ACTIONS ───────────────────────────────────────────
   const STATUS_LABELS = {
@@ -673,9 +689,9 @@
     const empty = document.getElementById('actions-empty');
     const table = document.getElementById('actions-table');
     try {
-      const snapshot = await db.collection('actions').get();
+      const snapshot = await getDocs(collection(db, 'actions'));
       const actions = snapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .map(d => ({ id: d.id, ...d.data() }))
         .sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
       if (!actions.length) {
         table.style.display = 'none';
@@ -703,7 +719,7 @@
     }
   }
 
-  function openActionModal(reset = true) {
+  window.openActionModal = function(reset = true) {
     if (reset) {
       editingActionId = null;
       document.getElementById('action-modal-title').textContent = 'Add Action Item';
@@ -715,15 +731,15 @@
     }
     document.getElementById('action-modal').classList.add('show');
     document.getElementById('a-item').focus();
-  }
+  };
 
-  function closeActionModal() {
+  window.closeActionModal = function() {
     document.getElementById('action-modal').classList.remove('show');
-  }
+  };
 
-  async function editAction(id) {
-    const doc = await db.collection('actions').doc(id).get();
-    const a = doc.data();
+  window.editAction = async function(id) {
+    const snap = await getDoc(doc(db, 'actions', id));
+    const a = snap.data();
     editingActionId = id;
     document.getElementById('action-modal-title').textContent = 'Edit Action Item';
     document.getElementById('a-item').value = a.item;
@@ -731,10 +747,10 @@
     document.getElementById('a-due').value = a.due;
     document.getElementById('a-status').value = a.status;
     document.getElementById('a-notes').value = a.notes;
-    openActionModal(false);
-  }
+    window.openActionModal(false);
+  };
 
-  async function saveAction() {
+  window.saveAction = async function() {
     const item = document.getElementById('a-item').value.trim();
     if (!item) { document.getElementById('a-item').focus(); return; }
     const entry = {
@@ -746,32 +762,32 @@
     };
     try {
       if (editingActionId !== null) {
-        await db.collection('actions').doc(editingActionId).update(entry);
+        await updateDoc(doc(db, 'actions', editingActionId), entry);
       } else {
-        entry.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-        await db.collection('actions').add(entry);
+        entry.createdAt = serverTimestamp();
+        await addDoc(collection(db, 'actions'), entry);
       }
-      closeActionModal();
+      window.closeActionModal();
       renderActions();
     } catch (err) {
       alert('Save failed: ' + err.message);
     }
-  }
+  };
 
-  async function deleteAction(id) {
+  window.deleteAction = async function(id) {
     if (!confirm('Delete this action item?')) return;
-    await db.collection('actions').doc(id).delete();
+    await deleteDoc(doc(db, 'actions', id));
     renderActions();
-  }
+  };
 
   // ── LEDGER ────────────────────────────────────────────
   async function renderLedger() {
     const tbody = document.getElementById('ledger-tbody');
     const empty = document.getElementById('ledger-empty');
     try {
-      const snapshot = await db.collection('ledger').get();
+      const snapshot = await getDocs(collection(db, 'ledger'));
       const entries = snapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .map(d => ({ id: d.id, ...d.data() }))
         .sort((a, b) => (a.date > b.date ? 1 : a.date < b.date ? -1 : (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0)));
 
       let totalIncome = 0, totalExpense = 0;
@@ -814,7 +830,7 @@
     }
   }
 
-  function openLedgerModal(reset = true) {
+  window.openLedgerModal = function(reset = true) {
     if (reset) {
       editingLedgerId = null;
       document.getElementById('ledger-modal-title').textContent = 'Add Ledger Entry';
@@ -826,15 +842,15 @@
     }
     document.getElementById('ledger-modal').classList.add('show');
     document.getElementById('l-purpose').focus();
-  }
+  };
 
-  function closeLedgerModal() {
+  window.closeLedgerModal = function() {
     document.getElementById('ledger-modal').classList.remove('show');
-  }
+  };
 
-  async function editLedger(id) {
-    const doc = await db.collection('ledger').doc(id).get();
-    const e = doc.data();
+  window.editLedger = async function(id) {
+    const snap = await getDoc(doc(db, 'ledger', id));
+    const e = snap.data();
     editingLedgerId = id;
     document.getElementById('ledger-modal-title').textContent = 'Edit Ledger Entry';
     document.getElementById('l-date').value = e.date;
@@ -842,10 +858,10 @@
     document.getElementById('l-purpose').value = e.purpose;
     document.getElementById('l-amount').value = e.amount;
     document.getElementById('l-source').value = e.source;
-    openLedgerModal(false);
-  }
+    window.openLedgerModal(false);
+  };
 
-  async function saveLedgerEntry() {
+  window.saveLedgerEntry = async function() {
     const purpose = document.getElementById('l-purpose').value.trim();
     const amount  = document.getElementById('l-amount').value;
     if (!purpose) { document.getElementById('l-purpose').focus(); return; }
@@ -859,23 +875,45 @@
     };
     try {
       if (editingLedgerId !== null) {
-        await db.collection('ledger').doc(editingLedgerId).update(entry);
+        await updateDoc(doc(db, 'ledger', editingLedgerId), entry);
       } else {
-        entry.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-        await db.collection('ledger').add(entry);
+        entry.createdAt = serverTimestamp();
+        await addDoc(collection(db, 'ledger'), entry);
       }
-      closeLedgerModal();
+      window.closeLedgerModal();
       renderLedger();
     } catch (err) {
       alert('Save failed: ' + err.message);
     }
-  }
+  };
 
-  async function deleteLedger(id) {
+  window.deleteLedger = async function(id) {
     if (!confirm('Delete this ledger entry?')) return;
-    await db.collection('ledger').doc(id).delete();
+    await deleteDoc(doc(db, 'ledger', id));
     renderLedger();
-  }
+  };
+
+  // ── SEED (run once from console: seedActions()) ───────
+  window.seedActions = async function() {
+    const items = [
+      { item: 'File 501(c)(3) nonprofit incorporation paperwork', owner: 'Joe', status: 'progress', due: '2026-06-01', notes: 'Required before commercial activity — merch, memberships, partnerships' },
+      { item: 'Draft and finalize bylaws & board governance docs', owner: 'Joe', status: 'progress', due: '2026-06-15', notes: 'Needed for 501(c)(3) application package' },
+      { item: 'Recruit initial board of directors (3–5 members)', owner: 'Joe', status: 'open', due: '2026-06-30', notes: 'Ideally includes music industry, legal, and finance backgrounds' },
+      { item: 'Confirm Gruene Songwriters Collective founding artist roster', owner: 'Joe', status: 'progress', due: '2026-05-31', notes: 'Wesley Hanna, Chris Welch + others; Texas–MO–KS corridor' },
+      { item: 'Identify 2–3 studio network partners in pilot markets', owner: 'Joe', status: 'open', due: '2026-07-01', notes: 'Focus on TX, MO, KS — subsidized rate agreements needed' },
+      { item: 'Finalize venue outreach list for Songwriter Trail pilot route', owner: 'Joe', status: 'open', due: '2026-07-15', notes: "Prioritize IL anchors (Fitzgerald's, SPACE) + TX anchors (Saxon Pub, Gruene Hall)" },
+      { item: 'Set up fan membership platform / infrastructure', owner: 'TBD', status: 'open', due: '2026-08-01', notes: 'Early access, merch discounts, BTS content — needs tech/platform decision' },
+      { item: 'Develop sponsor deck for underwriter outreach', owner: 'Joe', status: 'open', due: '2026-07-01', notes: 'Target: craft breweries, tourism boards, local banks, music schools' },
+      { item: 'Apply for NEA and arts council grant funding', owner: 'TBD', status: 'open', due: '2026-08-15', notes: 'Community development + arts nonprofit grants; research deadlines' },
+      { item: 'Launch AmpliFi.org website publicly', owner: 'Joe', status: 'progress', due: '2026-06-01', notes: 'Mission / Programs / Get Involved — design comps done per deck' },
+    ];
+    for (const entry of items) {
+      entry.createdAt = serverTimestamp();
+      await addDoc(collection(db, 'actions'), entry);
+    }
+    console.log('Seed complete.');
+    renderActions();
+  };
 
   // ── HELPERS ───────────────────────────────────────────
   function esc(str) {
@@ -892,10 +930,10 @@
 
   // close modals on overlay click
   document.getElementById('action-modal').addEventListener('click', e => {
-    if (e.target === e.currentTarget) closeActionModal();
+    if (e.target === e.currentTarget) window.closeActionModal();
   });
   document.getElementById('ledger-modal').addEventListener('click', e => {
-    if (e.target === e.currentTarget) closeLedgerModal();
+    if (e.target === e.currentTarget) window.closeLedgerModal();
   });
 
 </script>
