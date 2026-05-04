@@ -662,8 +662,10 @@
     const empty = document.getElementById('actions-empty');
     const table = document.getElementById('actions-table');
     try {
-      const snapshot = await db.collection('actions').orderBy('createdAt', 'asc').get();
-      const actions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const snapshot = await db.collection('actions').get();
+      const actions = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
       if (!actions.length) {
         table.style.display = 'none';
         empty.style.display = 'block';
@@ -756,8 +758,10 @@
     const tbody = document.getElementById('ledger-tbody');
     const empty = document.getElementById('ledger-empty');
     try {
-      const snapshot = await db.collection('ledger').orderBy('createdAt', 'asc').get();
-      const entries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const snapshot = await db.collection('ledger').get();
+      const entries = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .sort((a, b) => (a.date > b.date ? 1 : a.date < b.date ? -1 : (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0)));
 
       let totalIncome = 0, totalExpense = 0;
       entries.forEach(e => {
