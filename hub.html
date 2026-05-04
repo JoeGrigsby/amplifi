@@ -527,6 +527,8 @@
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
   import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, serverTimestamp }
     from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+  import { getAuth, signInWithCredential, GoogleAuthProvider, signOut }
+    from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 
   // ── FIREBASE ──────────────────────────────────────────
   const firebaseConfig = {
@@ -539,6 +541,7 @@
   };
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+  const auth = getAuth(app);
 
   let editingActionId = null;
   let editingLedgerId = null;
@@ -569,15 +572,25 @@
       err.style.display = 'block';
       return;
     }
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({
-      name: payload.name,
-      email: payload.email,
-      picture: payload.picture
-    }));
-    showDashboard(payload);
+    const credential = GoogleAuthProvider.credential(response.credential);
+    signInWithCredential(auth, credential)
+      .then(() => {
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+          name: payload.name,
+          email: payload.email,
+          picture: payload.picture
+        }));
+        showDashboard(payload);
+      })
+      .catch(err => {
+        const el = document.getElementById('gate-error');
+        el.textContent = 'Authentication error: ' + err.message;
+        el.style.display = 'block';
+      });
   };
 
   window.logout = function() {
+    signOut(auth);
     sessionStorage.removeItem(SESSION_KEY);
     location.reload();
   };
