@@ -8,13 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <script
-    async
-    crossorigin="anonymous"
-    data-clerk-publishable-key="pk_live_Y2xlcmsuc3VwcG9ydGFtcGxpZmkuY29tJA"
-    src="https://clerk.supportamplifi.com/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
-    type="text/javascript"
-  ></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -55,6 +49,15 @@
       display: flex; flex-direction: column; align-items: center; gap: 40px;
     }
     .gate-logo { height: 52px; filter: invert(1); }
+    .gate-subtitle {
+      font-family: var(--sans); font-size: 12px; font-weight: 500;
+      letter-spacing: 0.12em; text-transform: uppercase; color: var(--fg-dim);
+      margin-top: -24px;
+    }
+    #gate-error {
+      font-family: var(--sans); font-size: 13px; color: var(--red);
+      display: none;
+    }
 
     /* ── TOPBAR ── */
     .topbar {
@@ -326,7 +329,21 @@
 <div id="gate">
   <div class="gate-inner">
     <img src="assets/AmpliFiLogo.png" alt="AmpliFi" class="gate-logo" />
-    <div id="clerk-sign-in"></div>
+    <p class="gate-subtitle">Internal Operations</p>
+    <div id="g_id_onload"
+         data-client_id="974111119207-cjq0r23lp4j1lta72vsfb1pa3c5hcu22.apps.googleusercontent.com"
+         data-callback="handleGoogleSignIn"
+         data-auto_prompt="false">
+    </div>
+    <div class="g_id_signin"
+         data-type="standard"
+         data-size="large"
+         data-theme="outline"
+         data-text="sign_in_with"
+         data-shape="rectangular"
+         data-logo_alignment="left">
+    </div>
+    <div id="gate-error"></div>
   </div>
 </div>
 
@@ -513,19 +530,49 @@
   let editingActionId = null;
   let editingLedgerId = null;
 
-  // ── AUTH (Clerk) ───────────────────────────────────────
-  function logout() {
-    window.Clerk.signOut().then(() => location.reload());
+  // ── AUTH (Google Identity Services) ───────────────────
+  const SESSION_KEY = 'amplifi_guser';
+
+  function parseJwt(token) {
+    try {
+      return JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    } catch { return null; }
   }
 
-  window.addEventListener('load', async () => {
-    await window.Clerk.load();
-    if (window.Clerk.user) {
-      document.getElementById('gate').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'block';
-      initDashboard();
-    } else {
-      window.Clerk.mountSignIn(document.getElementById('clerk-sign-in'));
+  function showDashboard(user) {
+    document.getElementById('gate').style.display = 'none';
+    const dash = document.getElementById('dashboard');
+    dash.style.display = 'block';
+    const label = dash.querySelector('.topbar-label');
+    if (label && user.name) label.textContent = user.name;
+    initDashboard();
+  }
+
+  function handleGoogleSignIn(response) {
+    const payload = parseJwt(response.credential);
+    if (!payload) {
+      const err = document.getElementById('gate-error');
+      err.textContent = 'Sign-in failed. Please try again.';
+      err.style.display = 'block';
+      return;
+    }
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+      name: payload.name,
+      email: payload.email,
+      picture: payload.picture
+    }));
+    showDashboard(payload);
+  }
+
+  function logout() {
+    sessionStorage.removeItem(SESSION_KEY);
+    location.reload();
+  }
+
+  window.addEventListener('load', () => {
+    const stored = sessionStorage.getItem(SESSION_KEY);
+    if (stored) {
+      try { showDashboard(JSON.parse(stored)); return; } catch {}
     }
   });
 
