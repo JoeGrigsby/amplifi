@@ -881,6 +881,28 @@
     renderLedger();
   };
 
+  // ── SEED (run once from console: seedActions()) ───────
+  window.seedActions = async function() {
+    const items = [
+      { item: 'File 501(c)(3) nonprofit incorporation paperwork', owner: 'Joe', status: 'progress', due: '2026-06-01', notes: 'Required before commercial activity — merch, memberships, partnerships' },
+      { item: 'Draft and finalize bylaws & board governance docs', owner: 'Joe', status: 'progress', due: '2026-06-15', notes: 'Needed for 501(c)(3) application package' },
+      { item: 'Recruit initial board of directors (3–5 members)', owner: 'Joe', status: 'open', due: '2026-06-30', notes: 'Ideally includes music industry, legal, and finance backgrounds' },
+      { item: 'Confirm Gruene Songwriters Collective founding artist roster', owner: 'Joe', status: 'progress', due: '2026-05-31', notes: 'Wesley Hanna, Chris Welch + others; Texas–MO–KS corridor' },
+      { item: 'Identify 2–3 studio network partners in pilot markets', owner: 'Joe', status: 'open', due: '2026-07-01', notes: 'Focus on TX, MO, KS — subsidized rate agreements needed' },
+      { item: 'Finalize venue outreach list for Songwriter Trail pilot route', owner: 'Joe', status: 'open', due: '2026-07-15', notes: "Prioritize IL anchors (Fitzgerald's, SPACE) + TX anchors (Saxon Pub, Gruene Hall)" },
+      { item: 'Set up fan membership platform / infrastructure', owner: 'TBD', status: 'open', due: '2026-08-01', notes: 'Early access, merch discounts, BTS content — needs tech/platform decision' },
+      { item: 'Develop sponsor deck for underwriter outreach', owner: 'Joe', status: 'open', due: '2026-07-01', notes: 'Target: craft breweries, tourism boards, local banks, music schools' },
+      { item: 'Apply for NEA and arts council grant funding', owner: 'TBD', status: 'open', due: '2026-08-15', notes: 'Community development + arts nonprofit grants; research deadlines' },
+      { item: 'Launch AmpliFi.org website publicly', owner: 'Joe', status: 'progress', due: '2026-06-01', notes: 'Mission / Programs / Get Involved — design comps done per deck' },
+    ];
+    for (const entry of items) {
+      entry.createdAt = serverTimestamp();
+      await addDoc(collection(db, 'actions'), entry);
+    }
+    console.log('Seed complete.');
+    renderActions();
+  };
+
   // ── HELPERS ───────────────────────────────────────────
   function esc(str) {
     return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
