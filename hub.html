@@ -731,14 +731,18 @@
       status: document.getElementById('a-status').value,
       notes:  document.getElementById('a-notes').value.trim()
     };
-    if (editingActionId !== null) {
-      await db.collection('actions').doc(editingActionId).update(entry);
-    } else {
-      entry.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-      await db.collection('actions').add(entry);
+    try {
+      if (editingActionId !== null) {
+        await db.collection('actions').doc(editingActionId).update(entry);
+      } else {
+        entry.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+        await db.collection('actions').add(entry);
+      }
+      closeActionModal();
+      renderActions();
+    } catch (err) {
+      alert('Save failed: ' + err.message);
     }
-    closeActionModal();
-    renderActions();
   }
 
   async function deleteAction(id) {
@@ -752,7 +756,7 @@
     const tbody = document.getElementById('ledger-tbody');
     const empty = document.getElementById('ledger-empty');
     try {
-      const snapshot = await db.collection('ledger').orderBy('date', 'asc').orderBy('createdAt', 'asc').get();
+      const snapshot = await db.collection('ledger').orderBy('createdAt', 'asc').get();
       const entries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
       let totalIncome = 0, totalExpense = 0;
@@ -838,14 +842,18 @@
       amount:  parseFloat(amount).toFixed(2),
       source:  document.getElementById('l-source').value.trim()
     };
-    if (editingLedgerId !== null) {
-      await db.collection('ledger').doc(editingLedgerId).update(entry);
-    } else {
-      entry.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-      await db.collection('ledger').add(entry);
+    try {
+      if (editingLedgerId !== null) {
+        await db.collection('ledger').doc(editingLedgerId).update(entry);
+      } else {
+        entry.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+        await db.collection('ledger').add(entry);
+      }
+      closeLedgerModal();
+      renderLedger();
+    } catch (err) {
+      alert('Save failed: ' + err.message);
     }
-    closeLedgerModal();
-    renderLedger();
   }
 
   async function deleteLedger(id) {
