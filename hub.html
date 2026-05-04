@@ -544,6 +544,12 @@
   // ── AUTH (Google Identity Services) ───────────────────
   const SESSION_KEY = 'amplifi_guser';
 
+  const ALLOWED_EMAILS = [
+    'jgrigsby@gmail.com',
+    'nateayoung55@gmail.com',
+    'tim.eavenson@gmail.com',
+  ];
+
   function parseJwt(token) {
     try {
       return JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
@@ -561,9 +567,14 @@
 
   function handleGoogleSignIn(response) {
     const payload = parseJwt(response.credential);
+    const err = document.getElementById('gate-error');
     if (!payload) {
-      const err = document.getElementById('gate-error');
       err.textContent = 'Sign-in failed. Please try again.';
+      err.style.display = 'block';
+      return;
+    }
+    if (!ALLOWED_EMAILS.includes(payload.email)) {
+      err.textContent = `Access denied for ${payload.email}. Contact your administrator.`;
       err.style.display = 'block';
       return;
     }
