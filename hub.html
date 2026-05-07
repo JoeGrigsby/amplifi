@@ -265,16 +265,40 @@
       background: var(--bg-card); border: 1px solid var(--border);
       border-radius: 2px; padding: 32px 36px;
     }
-    .file-content-title {
-      font-family: var(--serif); font-size: 22px; font-weight: 400;
+    .file-content-header {
+      display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 24px; padding-bottom: 16px;
       border-bottom: 1px solid var(--border);
+    }
+    .file-content-title {
+      font-family: var(--serif); font-size: 22px; font-weight: 400;
+    }
+    .file-save-bar { display: flex; align-items: center; gap: 12px; }
+    .file-save-status {
+      font-family: var(--sans); font-size: 12px; color: var(--fg-dim);
     }
     .file-content-body {
       font-family: var(--sans); font-size: 14px; font-weight: 300;
       color: var(--fg-muted); line-height: 1.8;
       white-space: pre-wrap; word-break: break-word;
     }
+    .file-content-edit {
+      width: 100%; min-height: 480px;
+      background: oklch(13% 0.013 55);
+      border: 1px solid var(--border); border-radius: 2px;
+      color: var(--fg); font-family: var(--sans); font-size: 14px;
+      font-weight: 300; line-height: 1.8;
+      padding: 20px 24px; resize: vertical;
+      outline: none; transition: border-color 0.2s;
+    }
+    .file-content-edit:focus { border-color: var(--amber); }
+    .file-pdf-frame { width: 100%; height: 640px; border: none; border-radius: 2px; }
+    .file-download-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--sans); font-size: 14px; color: var(--amber);
+      text-decoration: none; padding: 12px 0;
+    }
+    .file-download-link:hover { opacity: 0.8; }
 
     /* ── MODAL ── */
     .modal-overlay {
@@ -377,7 +401,14 @@
         <div class="file-viewer" id="file-viewer">
           <button class="back-btn" onclick="closeFile()">← Back to Files</button>
           <div class="file-content-box">
-            <div class="file-content-title" id="file-viewer-name"></div>
+            <div class="file-content-header">
+              <div class="file-content-title" id="file-viewer-name"></div>
+              <div class="file-save-bar" id="file-save-bar" style="display:none">
+                <span class="file-save-status" id="file-save-status"></span>
+                <button class="btn-save" onclick="saveFileContent()">Save</button>
+              </div>
+            </div>
+            <textarea class="file-content-edit" id="file-viewer-edit" style="display:none"></textarea>
             <div class="file-content-body" id="file-viewer-body"></div>
           </div>
         </div>
@@ -540,6 +571,7 @@
 
   let editingActionId = null;
   let editingLedgerId = null;
+  let currentFile = null;
 
   // ── AUTH (Google Identity Services) ───────────────────
   const SESSION_KEY = 'amplifi_guser';
@@ -652,25 +684,80 @@
   }
 
   async function openFile(filename, displayName) {
-    const viewer = document.getElementById('file-viewer');
+    currentFile = filename;
+    const viewer   = document.getElementById('file-viewer');
     const fileList = document.getElementById('files-list');
-    const body = document.getElementById('file-viewer-body');
-    const title = document.getElementById('file-viewer-name');
-    body.textContent = 'Loading...';
-    title.textContent = displayName;
+    const body     = document.getElementById('file-viewer-body');
+    const editArea = document.getElementById('file-viewer-edit');
+    const saveBar  = document.getElementById('file-save-bar');
+    document.getElementById('file-viewer-name').textContent = displayName;
     fileList.classList.add('hide');
     viewer.classList.add('show');
-    try {
-      const res = await fetch('OrgFiles/' + filename + '?nocache=' + Date.now());
-      body.textContent = await res.text();
-    } catch {
-      body.textContent = 'Unable to load file.';
+
+    const ext = filename.split('.').pop().toLowerCase();
+
+    if (ext === 'txt') {
+      body.style.display    = 'none';
+      editArea.style.display = 'block';
+      saveBar.style.display  = 'flex';
+      editArea.value    = 'Loading…';
+      editArea.disabled = true;
+      setFileSaveStatus('');
+      try {
+        const doc = await db.collection('orgfiles').doc(filename).get();
+        if (doc.exists && doc.data().content !== undefined) {
+          editArea.value = doc.data().content;
+        } else {
+          const res = await fetch('OrgFiles/' + encodeURIComponent(filename) + '?nocache=' + Date.now());
+          editArea.value = await res.text();
+        }
+      } catch {
+        editArea.value = 'Unable to load file.';
+      }
+      editArea.disabled = false;
+      editArea.focus();
+    } else if (ext === 'pdf') {
+      body.style.display    = 'block';
+      editArea.style.display = 'none';
+      saveBar.style.display  = 'none';
+      body.innerHTML = `<iframe class="file-pdf-frame" src="OrgFiles/${encodeURIComponent(filename)}"></iframe>`;
+    } else {
+      body.style.display    = 'block';
+      editArea.style.display = 'none';
+      saveBar.style.display  = 'none';
+      body.innerHTML = `<a class="file-download-link" href="OrgFiles/${encodeURIComponent(filename)}" download>↓ Download ${esc(displayName)}</a>`;
     }
   }
 
   function closeFile() {
+    currentFile = null;
     document.getElementById('file-viewer').classList.remove('show');
     document.getElementById('files-list').classList.remove('hide');
+    document.getElementById('file-viewer-edit').style.display = 'none';
+    document.getElementById('file-viewer-body').style.display = 'block';
+    document.getElementById('file-save-bar').style.display    = 'none';
+    document.getElementById('file-viewer-body').innerHTML     = '';
+  }
+
+  function setFileSaveStatus(msg) {
+    document.getElementById('file-save-status').textContent = msg;
+  }
+
+  async function saveFileContent() {
+    if (!currentFile) return;
+    const content = document.getElementById('file-viewer-edit').value;
+    setFileSaveStatus('Saving…');
+    try {
+      await db.collection('orgfiles').doc(currentFile).set({
+        content,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      setFileSaveStatus('Saved');
+      setTimeout(() => setFileSaveStatus(''), 2000);
+    } catch (err) {
+      setFileSaveStatus('Save failed');
+      console.error('Error saving file:', err);
+    }
   }
 
   // ── ACTIONS ───────────────────────────────────────────
