@@ -589,13 +589,27 @@
     location.reload();
   }
 
-  firebase.auth().onAuthStateChanged(firebaseUser => {
+  firebase.auth().onAuthStateChanged(async firebaseUser => {
     if (firebaseUser && ALLOWED_EMAILS.includes(firebaseUser.email)) {
+      try {
+        await firebaseUser.getIdToken(true);
+      } catch {
+        await firebase.auth().signOut();
+        return;
+      }
       const stored = sessionStorage.getItem(SESSION_KEY);
       const user = stored ? JSON.parse(stored) : { name: firebaseUser.displayName, email: firebaseUser.email };
       showDashboard(user);
     }
   });
+
+  function handleFirestoreError(err, label) {
+    if (err.code === 'permission-denied') {
+      firebase.auth().signOut().then(() => location.reload());
+    } else {
+      console.error(label, err);
+    }
+  }
 
   // ── TABS ──────────────────────────────────────────────
   function showTab(name) {
@@ -698,7 +712,7 @@
           </td>
         </tr>`).join('');
     } catch (err) {
-      console.error('Error loading actions:', err);
+      handleFirestoreError(err, 'Error loading actions:');
     }
   }
 
@@ -753,7 +767,11 @@
       closeActionModal();
       renderActions();
     } catch (err) {
-      alert('Save failed: ' + err.message);
+      if (err.code === 'permission-denied') {
+        firebase.auth().signOut().then(() => location.reload());
+      } else {
+        alert('Save failed: ' + err.message);
+      }
     }
   }
 
@@ -809,7 +827,7 @@
           </td>
         </tr>`).join('');
     } catch (err) {
-      console.error('Error loading ledger:', err);
+      handleFirestoreError(err, 'Error loading ledger:');
     }
   }
 
@@ -866,7 +884,11 @@
       closeLedgerModal();
       renderLedger();
     } catch (err) {
-      alert('Save failed: ' + err.message);
+      if (err.code === 'permission-denied') {
+        firebase.auth().signOut().then(() => location.reload());
+      } else {
+        alert('Save failed: ' + err.message);
+      }
     }
   }
 
