@@ -299,6 +299,14 @@
       text-decoration: none; padding: 12px 0;
     }
     .file-download-link:hover { opacity: 0.8; }
+    .btn-commit {
+      padding: 10px 20px; background: transparent; color: var(--amber);
+      border: 1px solid var(--amber); border-radius: 2px; cursor: pointer;
+      font-family: var(--sans); font-size: 12px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase; transition: all 0.2s;
+    }
+    .btn-commit:hover { background: var(--amber-glow); }
+    .btn-commit:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* ── MODAL ── */
     .modal-overlay {
@@ -379,6 +387,7 @@
     <img src="assets/AmpliFiLogo.png" alt="AmpliFi" class="topbar-logo" />
     <div class="topbar-right">
       <span class="topbar-label">Internal Operations</span>
+      <button class="btn-ghost-sm" onclick="openGitHubSettings()" title="GitHub sync settings">⚙ GitHub</button>
       <button class="btn-ghost-sm" onclick="logout()">Sign Out</button>
     </div>
   </div>
@@ -406,6 +415,7 @@
               <div class="file-save-bar" id="file-save-bar" style="display:none">
                 <span class="file-save-status" id="file-save-status"></span>
                 <button class="btn-save" onclick="saveFileContent()">Save</button>
+                <button class="btn-commit" id="btn-commit-github" onclick="commitToGitHub()">Commit to GitHub</button>
               </div>
             </div>
             <textarea class="file-content-edit" id="file-viewer-edit" style="display:none"></textarea>
@@ -518,6 +528,30 @@
   </div>
 </div>
 
+<!-- GITHUB SETTINGS MODAL -->
+<div class="modal-overlay" id="github-modal">
+  <div class="modal">
+    <div class="modal-title">GitHub Sync</div>
+    <div class="modal-fields">
+      <div class="field full">
+        <label>Personal Access Token</label>
+        <input type="password" id="gh-pat-input" placeholder="ghp_…" autocomplete="off" />
+      </div>
+      <div class="field full">
+        <label style="text-transform:none;letter-spacing:0;font-size:12px;color:var(--fg-dim);font-weight:300">
+          Needs <strong style="color:var(--fg-muted)">Contents: Read &amp; Write</strong> permission on the
+          <strong style="color:var(--fg-muted)">JoeGrigsby/amplifi</strong> repo.
+          Stored encrypted in Firestore — only accessible to signed-in hub users.
+        </label>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeGitHubSettings()">Cancel</button>
+      <button class="btn-save" onclick="saveGitHubSettings()">Save Token</button>
+    </div>
+  </div>
+</div>
+
 <!-- LEDGER ENTRY MODAL -->
 <div class="modal-overlay" id="ledger-modal">
   <div class="modal">
@@ -572,6 +606,7 @@
   let editingActionId = null;
   let editingLedgerId = null;
   let currentFile = null;
+  let githubPAT = null;
 
   // ── AUTH (Google Identity Services) ───────────────────
   const SESSION_KEY = 'amplifi_guser';
@@ -656,6 +691,7 @@
     loadOrgFiles();
     renderActions();
     renderLedger();
+    loadGitHubPAT();
   }
 
   // ── ORG FILES ─────────────────────────────────────────
@@ -757,6 +793,99 @@
     } catch (err) {
       setFileSaveStatus('Save failed');
       console.error('Error saving file:', err);
+    }
+  }
+
+  // ── GITHUB SYNC ──────────────────────────────────────
+  async function loadGitHubPAT() {
+    try {
+      const doc = await db.collection('settings').doc('github').get();
+      if (doc.exists) githubPAT = doc.data().pat || null;
+    } catch (e) {
+      console.error('Could not load GitHub config:', e);
+    }
+  }
+
+  function openGitHubSettings() {
+    document.getElementById('gh-pat-input').value = githubPAT || '';
+    document.getElementById('github-modal').classList.add('show');
+    document.getElementById('gh-pat-input').focus();
+  }
+
+  function closeGitHubSettings() {
+    document.getElementById('github-modal').classList.remove('show');
+  }
+
+  async function saveGitHubSettings() {
+    const pat = document.getElementById('gh-pat-input').value.trim();
+    try {
+      await db.collection('settings').doc('github').set({ pat });
+      githubPAT = pat;
+      closeGitHubSettings();
+    } catch (e) {
+      alert('Failed to save token: ' + e.message);
+    }
+  }
+
+  function toBase64UTF8(str) {
+    const bytes = new TextEncoder().encode(str);
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+  }
+
+  async function commitToGitHub() {
+    if (!currentFile) return;
+    if (!githubPAT) { openGitHubSettings(); return; }
+
+    const content  = document.getElementById('file-viewer-edit').value;
+    const btn      = document.getElementById('btn-commit-github');
+    const apiUrl   = `https://api.github.com/repos/JoeGrigsby/amplifi/contents/OrgFiles/${encodeURIComponent(currentFile)}`;
+    const headers  = {
+      'Authorization': `token ${githubPAT}`,
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json'
+    };
+
+    setFileSaveStatus('Committing…');
+    btn.disabled = true;
+
+    try {
+      // Also persist to Firestore
+      await db.collection('orgfiles').doc(currentFile).set({
+        content,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      // Fetch current SHA (required by GitHub API to update an existing file)
+      let sha = null;
+      const getRes = await fetch(apiUrl + '?ref=main', { headers });
+      if (getRes.ok) {
+        sha = (await getRes.json()).sha;
+      } else if (getRes.status !== 404) {
+        throw new Error(`GitHub GET failed: ${getRes.status} ${getRes.statusText}`);
+      }
+
+      const body = {
+        message: `Update ${currentFile} via AmpliFi Hub`,
+        content: toBase64UTF8(content),
+        branch:  'main'
+      };
+      if (sha) body.sha = sha;
+
+      const putRes = await fetch(apiUrl, { method: 'PUT', headers, body: JSON.stringify(body) });
+      if (!putRes.ok) {
+        const err = await putRes.json();
+        throw new Error(err.message || putRes.statusText);
+      }
+
+      setFileSaveStatus('Committed ✓');
+      setTimeout(() => setFileSaveStatus(''), 3000);
+    } catch (err) {
+      setFileSaveStatus('Commit failed: ' + err.message);
+      console.error('GitHub commit error:', err);
+    } finally {
+      btn.disabled = false;
     }
   }
 
@@ -1004,6 +1133,9 @@
   });
   document.getElementById('ledger-modal').addEventListener('click', e => {
     if (e.target === e.currentTarget) closeLedgerModal();
+  });
+  document.getElementById('github-modal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeGitHubSettings();
   });
 
 </script>
