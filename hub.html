@@ -1445,20 +1445,25 @@ Keep responses focused, on-brand, and actionable. When rewriting, preserve the o
 ${guidelines}
 ---`;
 
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': anthropicKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-allow-browser': 'true',
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 4096, system, messages })
-    });
+    let res;
+    try {
+      res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': anthropicKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-allow-browser': 'true',
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 4096, system, messages })
+      });
+    } catch {
+      throw new Error('Could not reach the Anthropic API. Check your network connection and API key.');
+    }
 
     if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error?.message || res.statusText);
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `API error ${res.status}: ${res.statusText}`);
     }
     return (await res.json()).content[0].text;
   }
