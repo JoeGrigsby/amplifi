@@ -152,58 +152,65 @@ ${BRAND_GUIDELINES}
 
 // ── Callable: callClaude ─────────────────────────────────────────────────────
 exports.callClaude = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'You must be signed in to use this feature.');
-  }
-
-  const { messages } = data;
-  if (!Array.isArray(messages) || messages.length === 0) {
-    throw new functions.https.HttpsError('invalid-argument', 'A non-empty messages array is required.');
-  }
-
-  let apiKey;
   try {
-    const snap = await admin.firestore().collection('settings').doc('anthropic').get();
-    apiKey = snap.exists ? (snap.data().key || '').trim() : '';
+    if (!context.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'You must be signed in to use this feature.');
+    }
+
+    const { messages } = data;
+    if (!Array.isArray(messages) || messages.length === 0) {
+      throw new functions.https.HttpsError('invalid-argument', 'A non-empty messages array is required.');
+    }
+
+    let apiKey;
+    try {
+      const snap = await admin.firestore().collection('settings').doc('anthropic').get();
+      apiKey = snap.exists ? (snap.data().key || '').trim() : '';
+    } catch (e) {
+      throw new functions.https.HttpsError('internal', 'Failed to load API key: ' + e.message);
+    }
+
+    if (!apiKey) {
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        'Anthropic API key not configured. Add it via the Claude API Key settings.'
+      );
+    }
+
+    let res;
+    try {
+      res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key':         apiKey,
+          'anthropic-version': '2023-06-01',
+          'content-type':      'application/json',
+        },
+        body: JSON.stringify({
+          model:      'claude-sonnet-4-6',
+          max_tokens: 4096,
+          system:     SYSTEM_PROMPT,
+          messages,
+        }),
+      });
+    } catch (e) {
+      throw new functions.https.HttpsError('internal', 'Could not reach Anthropic API: ' + e.message);
+    }
+
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      throw new functions.https.HttpsError(
+        'internal',
+        errBody.error?.message || `Anthropic API error ${res.status}: ${res.statusText}`
+      );
+    }
+
+    const result = await res.json();
+    return { text: result.content[0].text };
   } catch (e) {
-    throw new functions.https.HttpsError('internal', 'Failed to load API key: ' + e.message);
+    if (e instanceof functions.https.HttpsError) throw e;
+    // Catch anything that slipped through (e.g. module load issues, unexpected throws)
+    console.error('callClaude unhandled error:', e);
+    throw new functions.https.HttpsError('internal', e.message || String(e));
   }
-
-  if (!apiKey) {
-    throw new functions.https.HttpsError(
-      'failed-precondition',
-      'Anthropic API key not configured. Add it via the Claude API Key settings.'
-    );
-  }
-
-  let res;
-  try {
-    res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key':         apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type':      'application/json',
-      },
-      body: JSON.stringify({
-        model:      'claude-sonnet-4-6',
-        max_tokens: 4096,
-        system:     SYSTEM_PROMPT,
-        messages,
-      }),
-    });
-  } catch (e) {
-    throw new functions.https.HttpsError('internal', 'Could not reach Anthropic API: ' + e.message);
-  }
-
-  if (!res.ok) {
-    const errBody = await res.json().catch(() => ({}));
-    throw new functions.https.HttpsError(
-      'internal',
-      errBody.error?.message || `Anthropic API error ${res.status}: ${res.statusText}`
-    );
-  }
-
-  const result = await res.json();
-  return { text: result.content[0].text };
 });
