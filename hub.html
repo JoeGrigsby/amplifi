@@ -740,13 +740,8 @@
       editArea.disabled = true;
       setFileSaveStatus('');
       try {
-        const doc = await db.collection('orgfiles').doc(filename).get();
-        if (doc.exists && doc.data().content !== undefined) {
-          editArea.value = doc.data().content;
-        } else {
-          const res = await fetch('OrgFiles/' + encodeURIComponent(filename) + '?nocache=' + Date.now());
-          editArea.value = await res.text();
-        }
+        const res = await fetch('OrgFiles/' + encodeURIComponent(filename) + '?nocache=' + Date.now());
+        editArea.value = await res.text();
       } catch {
         editArea.value = 'Unable to load file.';
       }
