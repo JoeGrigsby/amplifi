@@ -308,6 +308,93 @@
     .btn-commit:hover { background: var(--amber-glow); }
     .btn-commit:disabled { opacity: 0.4; cursor: not-allowed; }
 
+    /* ── BRAND ── */
+    .brand-layout { display: flex; flex-direction: column; gap: 24px; }
+    .brand-input-panel {
+      padding-bottom: 24px; border-bottom: 1px solid var(--border);
+    }
+    .brand-paste-area {
+      width: 100%; min-height: 130px;
+      background: oklch(13% 0.013 55);
+      border: 1px solid var(--border); border-radius: 2px;
+      color: var(--fg); font-family: var(--sans); font-size: 14px;
+      font-weight: 300; line-height: 1.7;
+      padding: 14px 18px; resize: vertical;
+      outline: none; transition: border-color 0.2s;
+    }
+    .brand-paste-area:focus { border-color: var(--amber); }
+    .brand-paste-area::placeholder { color: var(--fg-dim); }
+    .brand-input-actions {
+      display: flex; align-items: center; gap: 10px; margin-top: 12px;
+    }
+    .brand-upload-label {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 16px; background: transparent;
+      border: 1px solid var(--border); border-radius: 2px; cursor: pointer;
+      font-family: var(--sans); font-size: 11px; font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--fg-muted); transition: all 0.2s;
+    }
+    .brand-upload-label:hover { color: var(--fg); border-color: var(--fg-dim); }
+    .brand-key-notice {
+      font-family: var(--sans); font-size: 13px; color: var(--fg-dim);
+      padding: 14px 18px; background: var(--bg-card);
+      border: 1px solid var(--border); border-radius: 2px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .chat-messages {
+      display: flex; flex-direction: column; gap: 16px;
+      max-height: 520px; overflow-y: auto; padding-right: 4px;
+    }
+    .chat-empty {
+      color: var(--fg-dim); font-size: 14px; font-family: var(--sans);
+      padding: 24px 0;
+    }
+    .chat-bubble-wrap { display: flex; flex-direction: column; gap: 6px; }
+    .chat-bubble-wrap.user { align-items: flex-end; }
+    .chat-bubble-wrap.assistant { align-items: flex-start; }
+    .chat-role {
+      font-family: var(--sans); font-size: 10px; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--fg-dim); padding: 0 4px;
+    }
+    .chat-bubble {
+      max-width: 88%; padding: 14px 18px; border-radius: 2px;
+      font-family: var(--sans); font-size: 14px; font-weight: 300;
+      line-height: 1.75; white-space: pre-wrap; word-break: break-word;
+    }
+    .chat-bubble.user {
+      background: var(--amber-glow); border: 1px solid var(--amber);
+      color: var(--fg);
+    }
+    .chat-bubble.assistant {
+      background: var(--bg-card); border: 1px solid var(--border);
+      color: var(--fg);
+    }
+    .chat-bubble-actions { display: flex; gap: 8px; padding: 0 4px; }
+    .btn-bubble {
+      padding: 3px 10px; border: none; border-radius: 2px; cursor: pointer;
+      font-family: var(--sans); font-size: 10px; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      background: oklch(20% 0.015 55); color: var(--fg-dim);
+      transition: color 0.2s;
+    }
+    .btn-bubble:hover { color: var(--fg); }
+    .chat-input-row {
+      display: flex; gap: 10px; padding-top: 20px;
+      border-top: 1px solid var(--border); margin-top: 8px;
+    }
+    .chat-input {
+      flex: 1; padding: 11px 16px;
+      background: oklch(13% 0.013 55);
+      border: 1px solid var(--border); border-radius: 2px;
+      color: var(--fg); font-family: var(--sans); font-size: 14px;
+      font-weight: 300; outline: none; transition: border-color 0.2s;
+      resize: none;
+    }
+    .chat-input:focus { border-color: var(--amber); }
+    .chat-input::placeholder { color: var(--fg-dim); }
+
     /* ── MODAL ── */
     .modal-overlay {
       position: fixed; inset: 0; background: oklch(0% 0 0 / 0.7);
@@ -397,6 +484,7 @@
       <button class="dash-tab active" onclick="showTab('files')" id="tab-btn-files">Org Files</button>
       <button class="dash-tab" onclick="showTab('actions')" id="tab-btn-actions">Action Items</button>
       <button class="dash-tab" onclick="showTab('ledger')" id="tab-btn-ledger">Ledger</button>
+      <button class="dash-tab" onclick="showTab('brand')" id="tab-btn-brand">Engage Brand</button>
     </div>
 
     <div class="dash-main">
@@ -484,6 +572,37 @@
         <div class="empty-state" id="ledger-empty" style="display:none">No entries yet. Add your first transaction above.</div>
       </div>
 
+      <!-- BRAND -->
+      <div class="dash-section" id="sec-brand">
+        <div class="section-header">
+          <h2 class="section-title">Engage <em>Brand</em></h2>
+          <button class="btn-ghost-sm" onclick="clearBrandChat()">Clear Chat</button>
+        </div>
+        <div id="brand-key-notice" class="brand-key-notice" style="display:none">
+          <span>Claude API key required to use this feature.</span>
+          <button class="btn-add" onclick="openAnthropicSettings()">Configure Key →</button>
+        </div>
+        <div class="brand-layout">
+          <div class="brand-input-panel">
+            <textarea class="brand-paste-area" id="brand-input" placeholder="Paste content to rewrite in AmpliFi's voice — an email, bio, event description, social post, pitch deck copy… Or ask: 'How would AmpliFi talk about [topic]?'"></textarea>
+            <div class="brand-input-actions">
+              <label class="brand-upload-label">
+                ↑ Upload .txt / .md
+                <input type="file" id="brand-file-input" accept=".txt,.md" style="display:none" onchange="handleBrandFileUpload(event)" />
+              </label>
+              <button class="btn-add" onclick="submitBrandContent()">Rewrite for AmpliFi →</button>
+            </div>
+          </div>
+          <div id="brand-chat-messages" class="chat-messages">
+            <div class="chat-empty" id="brand-chat-empty">Paste content above to rewrite it in AmpliFi's voice, or ask a brand question to get started.</div>
+          </div>
+          <div class="chat-input-row">
+            <textarea class="chat-input" id="brand-chat-input" rows="1" placeholder="Ask a follow-up or request edits… (Enter to send, Shift+Enter for newline)" onkeydown="handleBrandChatKey(event)"></textarea>
+            <button class="btn-save" onclick="sendBrandMessage()">Send</button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -524,6 +643,29 @@
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeActionModal()">Cancel</button>
       <button class="btn-save" onclick="saveAction()">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- ANTHROPIC SETTINGS MODAL -->
+<div class="modal-overlay" id="anthropic-modal">
+  <div class="modal">
+    <div class="modal-title">Claude API Key</div>
+    <div class="modal-fields">
+      <div class="field full">
+        <label>API Key</label>
+        <input type="password" id="anthropic-key-input" placeholder="sk-ant-…" autocomplete="off" />
+      </div>
+      <div class="field full">
+        <label style="text-transform:none;letter-spacing:0;font-size:12px;color:var(--fg-dim);font-weight:300">
+          Get a key at <strong style="color:var(--fg-muted)">console.anthropic.com</strong>.
+          Stored in Firestore — only accessible to signed-in hub users.
+        </label>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeAnthropicSettings()">Cancel</button>
+      <button class="btn-save" onclick="saveAnthropicSettings()">Save Key</button>
     </div>
   </div>
 </div>
@@ -692,6 +834,7 @@
     renderActions();
     renderLedger();
     loadGitHubPAT();
+    loadAnthropicKey();
   }
 
   // ── ORG FILES ─────────────────────────────────────────
@@ -1109,6 +1252,234 @@
     renderLedger();
   }
 
+  // ── ANTHROPIC SETTINGS ───────────────────────────────
+  let anthropicKey = null;
+
+  async function loadAnthropicKey() {
+    try {
+      const doc = await db.collection('settings').doc('anthropic').get();
+      if (doc.exists) anthropicKey = doc.data().key || null;
+    } catch (e) {
+      console.error('Could not load Anthropic key:', e);
+    }
+  }
+
+  function openAnthropicSettings() {
+    document.getElementById('anthropic-key-input').value = anthropicKey || '';
+    document.getElementById('anthropic-modal').classList.add('show');
+    document.getElementById('anthropic-key-input').focus();
+  }
+
+  function closeAnthropicSettings() {
+    document.getElementById('anthropic-modal').classList.remove('show');
+  }
+
+  async function saveAnthropicSettings() {
+    const key = document.getElementById('anthropic-key-input').value.trim();
+    try {
+      await db.collection('settings').doc('anthropic').set({ key });
+      anthropicKey = key;
+      document.getElementById('brand-key-notice').style.display = 'none';
+      closeAnthropicSettings();
+    } catch (e) {
+      alert('Failed to save key: ' + e.message);
+    }
+  }
+
+  // ── BRAND ─────────────────────────────────────────────
+  let brandGuidelines = null;
+  let brandConversation = [];
+  let brandLoading = false;
+
+  async function loadBrandGuidelines() {
+    if (brandGuidelines) return brandGuidelines;
+    const res = await fetch('brand/amplifi-brand-guidelines.md?nocache=' + Date.now());
+    if (!res.ok) throw new Error('Could not load brand guidelines.');
+    brandGuidelines = await res.text();
+    return brandGuidelines;
+  }
+
+  function handleBrandFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => { document.getElementById('brand-input').value = e.target.result; };
+    reader.readAsText(file);
+    event.target.value = '';
+  }
+
+  async function callClaude(messages) {
+    if (!anthropicKey) { openAnthropicSettings(); throw new Error('No API key configured.'); }
+    const guidelines = await loadBrandGuidelines();
+    const system = `You are the AmpliFi brand voice expert — a creative collaborator fluent in the AmpliFi tone, values, and aesthetic.
+
+Your role:
+- Rewrite submitted content in AmpliFi's authentic voice and style
+- Answer questions about how AmpliFi would approach topics, messaging, or positioning
+- Help iterate and refine through conversation
+
+Keep responses focused, on-brand, and actionable. When rewriting, preserve the original meaning while transforming the voice. When answering questions, be specific and grounded in the guidelines below.
+
+--- AMPLIFI BRAND GUIDELINES ---
+${guidelines}
+---`;
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': anthropicKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-allow-browser': 'true',
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 4096, system, messages })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || res.statusText);
+    }
+    return (await res.json()).content[0].text;
+  }
+
+  function appendBrandMessage(role, text) {
+    document.getElementById('brand-chat-empty')?.remove();
+    const container = document.getElementById('brand-chat-messages');
+
+    const wrap = document.createElement('div');
+    wrap.className = `chat-bubble-wrap ${role}`;
+
+    const roleLabel = document.createElement('div');
+    roleLabel.className = 'chat-role';
+    roleLabel.textContent = role === 'user' ? 'You' : 'AmpliFi Brand';
+
+    const bubble = document.createElement('div');
+    bubble.className = `chat-bubble ${role}`;
+    bubble.textContent = text;
+
+    wrap.appendChild(roleLabel);
+    wrap.appendChild(bubble);
+
+    if (role === 'assistant') {
+      const actions = document.createElement('div');
+      actions.className = 'chat-bubble-actions';
+
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'btn-bubble';
+      copyBtn.textContent = 'Copy';
+      copyBtn.onclick = () => {
+        navigator.clipboard.writeText(text);
+        copyBtn.textContent = 'Copied ✓';
+        setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+      };
+
+      const dlBtn = document.createElement('button');
+      dlBtn.className = 'btn-bubble';
+      dlBtn.textContent = 'Download';
+      dlBtn.onclick = () => {
+        const blob = new Blob([text], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'amplifi-content.txt';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      };
+
+      actions.appendChild(copyBtn);
+      actions.appendChild(dlBtn);
+      wrap.appendChild(actions);
+    }
+
+    container.appendChild(wrap);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function appendBrandTyping() {
+    document.getElementById('brand-chat-empty')?.remove();
+    const container = document.getElementById('brand-chat-messages');
+    const wrap = document.createElement('div');
+    wrap.id = 'brand-typing';
+    wrap.className = 'chat-bubble-wrap assistant';
+
+    const roleLabel = document.createElement('div');
+    roleLabel.className = 'chat-role';
+    roleLabel.textContent = 'AmpliFi Brand';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble assistant';
+    bubble.style.color = 'var(--fg-dim)';
+    bubble.textContent = 'Writing…';
+
+    wrap.appendChild(roleLabel);
+    wrap.appendChild(bubble);
+    container.appendChild(wrap);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  async function submitBrandContent() {
+    if (brandLoading) return;
+    if (!anthropicKey) { openAnthropicSettings(); return; }
+    const input = document.getElementById('brand-input').value.trim();
+    if (!input) { document.getElementById('brand-input').focus(); return; }
+
+    brandLoading = true;
+    brandConversation = [{ role: 'user', content: `Please rewrite the following content in AmpliFi's voice:\n\n${input}` }];
+    appendBrandMessage('user', input);
+    appendBrandTyping();
+
+    try {
+      const reply = await callClaude(brandConversation);
+      document.getElementById('brand-typing')?.remove();
+      brandConversation.push({ role: 'assistant', content: reply });
+      appendBrandMessage('assistant', reply);
+      document.getElementById('brand-input').value = '';
+    } catch (err) {
+      document.getElementById('brand-typing')?.remove();
+      appendBrandMessage('assistant', '⚠ ' + err.message);
+    } finally {
+      brandLoading = false;
+    }
+  }
+
+  async function sendBrandMessage() {
+    if (brandLoading) return;
+    if (!anthropicKey) { openAnthropicSettings(); return; }
+    const chatInput = document.getElementById('brand-chat-input');
+    const input = chatInput.value.trim();
+    if (!input) return;
+
+    brandLoading = true;
+    chatInput.value = '';
+    brandConversation.push({ role: 'user', content: input });
+    appendBrandMessage('user', input);
+    appendBrandTyping();
+
+    try {
+      const reply = await callClaude(brandConversation);
+      document.getElementById('brand-typing')?.remove();
+      brandConversation.push({ role: 'assistant', content: reply });
+      appendBrandMessage('assistant', reply);
+    } catch (err) {
+      document.getElementById('brand-typing')?.remove();
+      appendBrandMessage('assistant', '⚠ ' + err.message);
+    } finally {
+      brandLoading = false;
+    }
+  }
+
+  function handleBrandChatKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendBrandMessage();
+    }
+  }
+
+  function clearBrandChat() {
+    brandConversation = [];
+    const container = document.getElementById('brand-chat-messages');
+    container.innerHTML = '<div class="chat-empty" id="brand-chat-empty">Paste content above to rewrite it in AmpliFi\'s voice, or ask a brand question to get started.</div>';
+  }
+
   // ── HELPERS ───────────────────────────────────────────
   function esc(str) {
     return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -1131,6 +1502,9 @@
   });
   document.getElementById('github-modal').addEventListener('click', e => {
     if (e.target === e.currentTarget) closeGitHubSettings();
+  });
+  document.getElementById('anthropic-modal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeAnthropicSettings();
   });
 
 </script>
