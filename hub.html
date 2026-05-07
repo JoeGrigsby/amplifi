@@ -1307,8 +1307,16 @@
       const result = await claudeCallable({ messages });
       return result.data.text;
     } catch (err) {
-      if (err.code === 'functions/failed-precondition') {
+      const code = err.code || '';
+      if (code === 'functions/failed-precondition') {
         openAnthropicSettings();
+        throw new Error('Anthropic API key not configured.');
+      }
+      if (code === 'functions/unauthenticated') {
+        throw new Error('Session expired — please sign in again.');
+      }
+      if (code === 'functions/not-found' || code === 'functions/unavailable') {
+        throw new Error('AI service not deployed yet. Run: firebase deploy --only functions');
       }
       throw new Error(err.message || 'Could not reach the AmpliFi AI service.');
     }

@@ -1,10 +1,9 @@
 'use strict';
 
-const { onCall, HttpsError } = require('firebase-functions/v2/https');
-const { initializeApp }      = require('firebase-admin/app');
-const { getFirestore }       = require('firebase-admin/firestore');
+const functions  = require('firebase-functions');
+const admin      = require('firebase-admin');
 
-initializeApp();
+admin.initializeApp();
 
 // ── Brand guidelines (server-side copy; client no longer needs them) ─────────
 const BRAND_GUIDELINES = `# AmpliFi — Brand Guidelines
@@ -151,46 +150,59 @@ ${BRAND_GUIDELINES}
 ---`;
 
 // ── Callable: callClaude ─────────────────────────────────────────────────────
-exports.callClaude = onCall({ region: 'us-central1' }, async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'You must be signed in to use this feature.');
+exports.callClaude = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'You must be signed in to use this feature.');
   }
 
-  const { messages } = request.data;
+  const { messages } = data;
   if (!Array.isArray(messages) || messages.length === 0) {
-    throw new HttpsError('invalid-argument', 'A non-empty messages array is required.');
+    throw new functions.https.HttpsError('invalid-argument', 'A non-empty messages array is required.');
   }
 
-  const db = getFirestore();
-  const snap = await db.collection('settings').doc('anthropic').get();
-  const apiKey = snap.exists ? (snap.data().key || '').trim() : '';
+  let apiKey;
+  try {
+    const snap = await admin.firestore().collection('settings').doc('anthropic').get();
+    apiKey = snap.exists ? (snap.data().key || '').trim() : '';
+  } catch (e) {
+    throw new functions.https.HttpsError('internal', 'Failed to load API key: ' + e.message);
+  }
+
   if (!apiKey) {
-    throw new HttpsError(
+    throw new functions.https.HttpsError(
       'failed-precondition',
       'Anthropic API key not configured. Add it via the Claude API Key settings.'
     );
   }
 
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key':          apiKey,
-      'anthropic-version':  '2023-06-01',
-      'content-type':       'application/json',
-    },
-    body: JSON.stringify({
-      model:      'claude-sonnet-4-6',
-      max_tokens: 4096,
-      system:     SYSTEM_PROMPT,
-      messages,
-    }),
-  });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new HttpsError('internal', err.error?.message || `Anthropic API error ${res.status}`);
+  let res;
+  try {
+    res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key':         apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type':      'application/json',
+      },
+      body: JSON.stringify({
+        model:      'claude-sonnet-4-6',
+        max_tokens: 4096,
+        system:     SYSTEM_PROMPT,
+        messages,
+      }),
+    });
+  } catch (e) {
+    throw new functions.https.HttpsError('internal', 'Could not reach Anthropic API: ' + e.message);
   }
 
-  const data = await res.json();
-  return { text: data.content[0].text };
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    throw new functions.https.HttpsError(
+      'internal',
+      errBody.error?.message || `Anthropic API error ${res.status}: ${res.statusText}`
+    );
+  }
+
+  const result = await res.json();
+  return { text: result.content[0].text };
 });
