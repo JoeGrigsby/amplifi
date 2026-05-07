@@ -1315,8 +1315,9 @@
       if (code === 'functions/unauthenticated') {
         throw new Error('Session expired — please sign in again.');
       }
-      if (code === 'functions/not-found' || code === 'functions/unavailable') {
-        throw new Error('AI service not deployed yet. Run: firebase deploy --only functions');
+      if (code === 'functions/not-found' || code === 'functions/unavailable' ||
+          (code === 'functions/internal' && err.message === 'internal')) {
+        throw new Error('AI service not deployed. Run: firebase deploy --only functions');
       }
       throw new Error(err.message || 'Could not reach the AmpliFi AI service.');
     }
