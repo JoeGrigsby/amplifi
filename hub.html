@@ -536,6 +536,15 @@
           <div class="empty-state" id="actions-empty" style="display:none">No action items yet. Add your first item above.</div>
         </div>
       </div>
+      <style>
+        .group-header-row td {
+          padding: 18px 14px 8px;
+          font-size: 10px; font-weight: 600; letter-spacing: 0.14em;
+          text-transform: uppercase; color: var(--amber);
+          border-bottom: 1px solid var(--border);
+          background: var(--bg-warm);
+        }
+      </style>
 
       <!-- LEDGER -->
       <div class="dash-section" id="sec-ledger">
@@ -616,6 +625,11 @@
       <div class="field full">
         <label>Item</label>
         <input type="text" id="a-item" placeholder="Describe the action item" />
+      </div>
+      <div class="field full">
+        <label>Project Group</label>
+        <input type="text" id="a-group" placeholder="e.g. Set Up non-Profit" list="a-group-list" />
+        <datalist id="a-group-list"></datalist>
       </div>
       <div class="modal-row">
         <div class="field">
@@ -1043,9 +1057,33 @@
     const table = document.getElementById('actions-table');
     try {
       const snapshot = await db.collection('actions').get();
-      const actions = snapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
-        .sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+      const actions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      // Migrate existing actions that have no projectGroup
+      const needsMigration = actions.filter(a => !a.projectGroup);
+      if (needsMigration.length) {
+        const batch = db.batch();
+        needsMigration.forEach(a => {
+          batch.update(db.collection('actions').doc(a.id), { projectGroup: 'Set Up non-Profit' });
+          a.projectGroup = 'Set Up non-Profit';
+        });
+        await batch.commit();
+      }
+
+      // Sort: group name, then createdAt
+      actions.sort((a, b) => {
+        const ga = (a.projectGroup || '').toLowerCase();
+        const gb = (b.projectGroup || '').toLowerCase();
+        if (ga < gb) return -1;
+        if (ga > gb) return 1;
+        return (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0);
+      });
+
+      // Populate datalist for autocomplete
+      const groups = [...new Set(actions.map(a => a.projectGroup).filter(Boolean))];
+      const datalist = document.getElementById('a-group-list');
+      datalist.innerHTML = groups.map(g => `<option value="${esc(g)}">`).join('');
+
       if (!actions.length) {
         table.style.display = 'none';
         empty.style.display = 'block';
@@ -1053,7 +1091,15 @@
       }
       table.style.display = 'table';
       empty.style.display = 'none';
-      tbody.innerHTML = actions.map(a => `
+
+      let currentGroup = null;
+      tbody.innerHTML = actions.map(a => {
+        let groupHeader = '';
+        if (a.projectGroup !== currentGroup) {
+          currentGroup = a.projectGroup;
+          groupHeader = `<tr class="group-header-row"><td colspan="6">${esc(currentGroup || 'Ungrouped')}</td></tr>`;
+        }
+        return groupHeader + `
         <tr>
           <td style="color:var(--fg);font-weight:400;max-width:260px">${esc(a.item)}</td>
           <td>${esc(a.owner)}</td>
@@ -1066,7 +1112,8 @@
               <button class="btn-row btn-delete" onclick="deleteAction('${a.id}')">Delete</button>
             </div>
           </td>
-        </tr>`).join('');
+        </tr>`;
+      }).join('');
     } catch (err) {
       handleFirestoreError(err, 'Error loading actions:');
     }
@@ -1077,6 +1124,7 @@
       editingActionId = null;
       document.getElementById('action-modal-title').textContent = 'Add Action Item';
       document.getElementById('a-item').value = '';
+      document.getElementById('a-group').value = '';
       document.getElementById('a-owner').value = '';
       document.getElementById('a-due').value = '';
       document.getElementById('a-status').value = 'open';
@@ -1096,6 +1144,7 @@
     editingActionId = id;
     document.getElementById('action-modal-title').textContent = 'Edit Action Item';
     document.getElementById('a-item').value = a.item;
+    document.getElementById('a-group').value = a.projectGroup || '';
     document.getElementById('a-owner').value = a.owner;
     document.getElementById('a-due').value = a.due;
     document.getElementById('a-status').value = a.status;
@@ -1108,6 +1157,7 @@
     if (!item) { document.getElementById('a-item').focus(); return; }
     const entry = {
       item,
+      projectGroup: document.getElementById('a-group').value.trim(),
       owner:  document.getElementById('a-owner').value.trim(),
       due:    document.getElementById('a-due').value,
       status: document.getElementById('a-status').value,
