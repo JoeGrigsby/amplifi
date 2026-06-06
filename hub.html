@@ -523,10 +523,11 @@
           <table class="data-table" id="actions-table">
             <thead>
               <tr>
-                <th>Item</th>
-                <th>Owner</th>
-                <th>Status</th>
-                <th>Due Date</th>
+                <th class="sortable" onclick="sortActions('item')">Item <span class="sort-indicator" data-col="item"></span></th>
+                <th class="sortable" onclick="sortActions('projectGroup')">Project Group <span class="sort-indicator" data-col="projectGroup"></span></th>
+                <th class="sortable" onclick="sortActions('owner')">Owner <span class="sort-indicator" data-col="owner"></span></th>
+                <th class="sortable" onclick="sortActions('status')">Status <span class="sort-indicator" data-col="status"></span></th>
+                <th class="sortable" onclick="sortActions('due')">Due Date <span class="sort-indicator" data-col="due"></span></th>
                 <th>Notes</th>
                 <th></th>
               </tr>
@@ -544,6 +545,9 @@
           border-bottom: 1px solid var(--border);
           background: var(--bg-warm);
         }
+        .data-table th.sortable { cursor: pointer; user-select: none; }
+        .data-table th.sortable:hover { color: var(--fg); }
+        .sort-indicator { font-size: 9px; margin-left: 4px; color: var(--amber); }
       </style>
 
       <!-- LEDGER -->
@@ -763,6 +767,9 @@
 
   let editingActionId = null;
   let editingLedgerId = null;
+  let actionSortCol = 'projectGroup';
+  let actionSortDir = 1; // 1 = asc, -1 = desc
+  let cachedActions = [];
   let currentFile = null;
   let githubPAT = null;
 
@@ -1057,10 +1064,10 @@
     const table = document.getElementById('actions-table');
     try {
       const snapshot = await db.collection('actions').get();
-      const actions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      cachedActions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
       // Migrate existing actions that have no projectGroup
-      const needsMigration = actions.filter(a => !a.projectGroup);
+      const needsMigration = cachedActions.filter(a => !a.projectGroup);
       if (needsMigration.length) {
         const batch = db.batch();
         needsMigration.forEach(a => {
@@ -1070,53 +1077,89 @@
         await batch.commit();
       }
 
-      // Sort: group name, then createdAt
-      actions.sort((a, b) => {
-        const ga = (a.projectGroup || '').toLowerCase();
-        const gb = (b.projectGroup || '').toLowerCase();
-        if (ga < gb) return -1;
-        if (ga > gb) return 1;
-        return (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0);
-      });
-
       // Populate datalist for autocomplete
-      const groups = [...new Set(actions.map(a => a.projectGroup).filter(Boolean))];
+      const groups = [...new Set(cachedActions.map(a => a.projectGroup).filter(Boolean))];
       const datalist = document.getElementById('a-group-list');
       datalist.innerHTML = groups.map(g => `<option value="${esc(g)}">`).join('');
 
-      if (!actions.length) {
-        table.style.display = 'none';
-        empty.style.display = 'block';
-        return;
-      }
-      table.style.display = 'table';
-      empty.style.display = 'none';
-
-      let currentGroup = null;
-      tbody.innerHTML = actions.map(a => {
-        let groupHeader = '';
-        if (a.projectGroup !== currentGroup) {
-          currentGroup = a.projectGroup;
-          groupHeader = `<tr class="group-header-row"><td colspan="6">${esc(currentGroup || 'Ungrouped')}</td></tr>`;
-        }
-        return groupHeader + `
-        <tr>
-          <td style="color:var(--fg);font-weight:400;max-width:260px">${esc(a.item)}</td>
-          <td>${esc(a.owner)}</td>
-          <td><span class="badge ${STATUS_CLASSES[a.status]}">${STATUS_LABELS[a.status]}</span></td>
-          <td>${a.due ? fmtDate(a.due) : '<span style="color:var(--fg-dim)">—</span>'}</td>
-          <td style="max-width:220px;color:var(--fg-muted)">${esc(a.notes)}</td>
-          <td>
-            <div class="row-actions">
-              <button class="btn-row btn-edit" onclick="editAction('${a.id}')">Edit</button>
-              <button class="btn-row btn-delete" onclick="deleteAction('${a.id}')">Delete</button>
-            </div>
-          </td>
-        </tr>`;
-      }).join('');
+      renderActionRows();
     } catch (err) {
       handleFirestoreError(err, 'Error loading actions:');
     }
+  }
+
+  function sortActions(col) {
+    if (actionSortCol === col) {
+      actionSortDir *= -1;
+    } else {
+      actionSortCol = col;
+      actionSortDir = 1;
+    }
+    renderActionRows();
+  }
+
+  function renderActionRows() {
+    const tbody = document.getElementById('actions-tbody');
+    const empty = document.getElementById('actions-empty');
+    const table = document.getElementById('actions-table');
+
+    // Update sort indicators
+    document.querySelectorAll('.sort-indicator').forEach(el => {
+      const col = el.dataset.col;
+      el.textContent = col === actionSortCol ? (actionSortDir === 1 ? '▲' : '▼') : '';
+    });
+
+    const actions = [...cachedActions].sort((a, b) => {
+      let va = '', vb = '';
+      if (actionSortCol === 'due') {
+        va = a.due || '';
+        vb = b.due || '';
+      } else if (actionSortCol === 'projectGroup') {
+        va = (a.projectGroup || '').toLowerCase();
+        vb = (b.projectGroup || '').toLowerCase();
+        if (va === vb) return (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0);
+      } else {
+        va = (a[actionSortCol] || '').toLowerCase();
+        vb = (b[actionSortCol] || '').toLowerCase();
+      }
+      if (va < vb) return -1 * actionSortDir;
+      if (va > vb) return 1 * actionSortDir;
+      return 0;
+    });
+
+    if (!actions.length) {
+      table.style.display = 'none';
+      empty.style.display = 'block';
+      return;
+    }
+    table.style.display = 'table';
+    empty.style.display = 'none';
+
+    // Show group headers only when sorting by project group
+    const grouping = actionSortCol === 'projectGroup';
+    let currentGroup = null;
+    tbody.innerHTML = actions.map(a => {
+      let groupHeader = '';
+      if (grouping && a.projectGroup !== currentGroup) {
+        currentGroup = a.projectGroup;
+        groupHeader = `<tr class="group-header-row"><td colspan="7">${esc(currentGroup || 'Ungrouped')}</td></tr>`;
+      }
+      return groupHeader + `
+      <tr>
+        <td style="color:var(--fg);font-weight:400;max-width:220px">${esc(a.item)}</td>
+        <td style="color:var(--amber);font-size:12px">${esc(a.projectGroup || '—')}</td>
+        <td>${esc(a.owner)}</td>
+        <td><span class="badge ${STATUS_CLASSES[a.status]}">${STATUS_LABELS[a.status]}</span></td>
+        <td>${a.due ? fmtDate(a.due) : '<span style="color:var(--fg-dim)">—</span>'}</td>
+        <td style="max-width:200px;color:var(--fg-muted)">${esc(a.notes)}</td>
+        <td>
+          <div class="row-actions">
+            <button class="btn-row btn-edit" onclick="editAction('${a.id}')">Edit</button>
+            <button class="btn-row btn-delete" onclick="deleteAction('${a.id}')">Delete</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
   }
 
   function openActionModal(reset = true) {
