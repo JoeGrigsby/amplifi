@@ -854,10 +854,50 @@
   // ── INIT ──────────────────────────────────────────────
   function initDashboard() {
     loadOrgFiles();
-    renderActions();
+    seedActionItems().then(() => renderActions());
     renderLedger();
     loadGitHubPAT();
     loadAnthropicKey();
+  }
+
+  async function seedActionItems() {
+    const SEED_DOC = 'amplifi_seed_v1';
+    const flagRef = db.collection('settings').doc(SEED_DOC);
+    const flag = await flagRef.get();
+    if (flag.exists) return;
+
+    const items = [
+      { item: 'Evaluate Ste. Genevieve Venue (Workshop Only)', projectGroup: 'Chris Welch Workshop', owner: 'Nate', status: 'open', due: '', notes: 'Identify venue option without lodging. Include costs, capacity, songwriter atmosphere, and content capture opportunities.' },
+      { item: 'Evaluate Ste. Genevieve Venue (Workshop + Lodging)', projectGroup: 'Chris Welch Workshop', owner: 'Nate', status: 'open', due: '', notes: 'Identify all-inclusive venue/lodging option. Include attendee experience and financial model.' },
+      { item: 'Confirm Chris Welch Workshop Dates', projectGroup: 'Chris Welch Workshop', owner: 'Nate', status: 'open', due: '', notes: 'Meet with Chris and lock preferred October 2026 dates.' },
+      { item: 'Define Ideal Attendee Profile', projectGroup: 'Chris Welch Workshop', owner: 'Nate', status: 'open', due: '', notes: 'Determine target participant type, experience level, geography, and recruitment strategy.' },
+      { item: 'Identify Prospective Participants', projectGroup: 'Chris Welch Workshop', owner: 'Nate', status: 'open', due: '', notes: "Gather names of potential attendees from Chris's network and audience." },
+      { item: "Define Hudson's Workshop Role", projectGroup: 'Chris Welch Workshop', owner: 'Nate', status: 'open', due: '', notes: 'Determine whether Hudson participates as attendee, featured artist, apprentice, or assistant.' },
+      { item: 'Collect Chris Promotional Assets', projectGroup: 'Chris Welch Workshop', owner: 'Nate', status: 'open', due: '', notes: 'Gather email lists, Facebook groups, photos, videos, testimonials, and promotional opportunities.' },
+      { item: 'Develop Workshop Brand & Positioning', projectGroup: 'Chris Welch Workshop', owner: 'Joe Grigsby', status: 'open', due: '', notes: 'Create workshop name, positioning, messaging, and attendee value proposition.' },
+      { item: 'Create Workshop Flyer', projectGroup: 'Chris Welch Workshop', owner: 'Joe Grigsby', status: 'open', due: '', notes: 'Develop promotional flyer and registration materials.' },
+      { item: 'Build Registration & Promotion Plan', projectGroup: 'Chris Welch Workshop', owner: 'Joe Grigsby', status: 'open', due: '', notes: 'Create landing page, registration process, social plan, and email campaign.' },
+      { item: 'Define Songwriter Performance Experience', projectGroup: 'Chris Welch Workshop', owner: 'Joe Grigsby', status: 'open', due: '', notes: 'Ensure workshop includes songwriter rounds, storytelling, and public-facing performances.' },
+      { item: 'Develop Content Capture Plan', projectGroup: 'Chris Welch Workshop', owner: 'Joe Grigsby', status: 'open', due: '', notes: 'Record performances, interviews, teaching sessions, testimonials, and promotional footage.' },
+      { item: 'Evaluate Workshop Venues for Songwriter Shows', projectGroup: 'Chris Welch Workshop', owner: 'Nate', status: 'open', due: '', notes: 'Assess venues based on listening-room atmosphere, audience experience, and filming capability.' },
+      { item: 'Meet with Jason Eady Regarding Workshop 2.0', projectGroup: 'Jason Eady Workshop', owner: 'Nate', status: 'open', due: '', notes: 'Discuss interest, format, timing, compensation, and future partnership opportunities.' },
+      { item: 'Meet with Matt Regarding Workshop Expansion', projectGroup: 'Jason Eady Workshop', owner: 'Nate', status: 'open', due: '', notes: 'Explore promotion, artist recruitment, and strategic growth opportunities.' },
+      { item: 'Define Jason Eady Workshop Concept', projectGroup: 'Jason Eady Workshop', owner: 'Nate', status: 'open', due: '', notes: 'Differentiate from Chris workshop and establish premium retreat concept.' },
+      { item: 'Meet with Jill Regarding Event Project Management', projectGroup: 'Event Operations', owner: 'Nate', status: 'open', due: '', notes: 'Determine interest, availability, responsibilities, and compensation.' },
+      { item: 'Meet with Dana Regarding Gruene Showcase', projectGroup: 'Gruene Songwriter Showcase', owner: 'Nate', status: 'open', due: '', notes: 'Clarify current and future role before broader planning begins.' },
+      { item: 'Meet with Rowdy Regarding Gruene Showcase', projectGroup: 'Gruene Songwriter Showcase', owner: 'Nate', status: 'open', due: '', notes: 'Discuss event planning, artist participation, promotion, and venue considerations.' },
+      { item: 'Establish Gruene Showcase Event Plan', projectGroup: 'Gruene Songwriter Showcase', owner: 'Nate', status: 'open', due: '', notes: 'Confirm March 2027 timing, venue, budget, and promotional plan.' },
+      { item: 'Sell 50 Tickets for Gruene Showcase', projectGroup: 'Gruene Songwriter Showcase', owner: 'Nate', status: 'open', due: '', notes: 'Establish ticket sales goals, promotional calendar, and outreach plan.' },
+      { item: 'Create Gruene Showcase Sponsorship Package', projectGroup: 'Gruene Songwriter Showcase', owner: 'Joe Grigsby', status: 'open', due: '', notes: 'Develop sponsorship tiers and outreach materials.' },
+    ];
+
+    const batch = db.batch();
+    const ts = firebase.firestore.FieldValue.serverTimestamp();
+    items.forEach(item => {
+      batch.set(db.collection('actions').doc(), { ...item, createdAt: ts });
+    });
+    batch.set(flagRef, { seededAt: ts });
+    await batch.commit();
   }
 
   // ── ORG FILES ─────────────────────────────────────────
