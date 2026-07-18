@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Hero Stage",
+    "path": "assets/hero-stage.png"
+  },
+  {
+    "name": "Performer",
+    "path": "assets/performer.png"
+  },
+  {
+    "name": "Studio Session",
+    "path": "assets/session.png"
+  }
+]
