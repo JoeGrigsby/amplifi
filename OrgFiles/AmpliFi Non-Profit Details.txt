@@ -362,3 +362,7 @@ _Source: :contentReference[oaicite:0]{index=0}_
 ## Nathan Young, 1311 Mulberry Ct, Eudora KS, 66025
 
 ## Timothy Eavenson, 4040 Clausen Ave, Western Springs, Il 60558
+
+## Bill Krecji
+
+## Matt Fairchild
