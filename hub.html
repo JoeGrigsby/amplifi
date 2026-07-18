@@ -396,6 +396,55 @@
     .chat-input:focus { border-color: var(--amber); }
     .chat-input::placeholder { color: var(--fg-dim); }
 
+    /* ── PROMO STUDIO ── */
+    .promo-section-label {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--fg-dim); margin-bottom: 12px;
+    }
+    .promo-grid {
+      display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;
+    }
+    .promo-form { flex: 1 1 380px; min-width: 320px; display: flex; flex-direction: column; gap: 28px; }
+    .promo-format-row { display: flex; gap: 2px; flex-wrap: wrap; }
+    .promo-format-btn {
+      flex: 1; min-width: 130px; padding: 13px 8px; background: var(--bg-card);
+      border: none; border-bottom: 2px solid transparent; cursor: pointer;
+      font-family: var(--sans); font-size: 11px; font-weight: 500;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--fg-muted); text-align: center; transition: all 0.2s;
+    }
+    .promo-format-btn:hover { color: var(--fg); }
+    .promo-format-btn.active {
+      color: var(--fg); background: oklch(19% 0.018 55); border-bottom-color: var(--amber);
+    }
+    .promo-asset-gallery {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+      gap: 8px;
+    }
+    .promo-asset-thumb {
+      position: relative; aspect-ratio: 1; border-radius: 2px; overflow: hidden;
+      cursor: pointer; border: 2px solid transparent; background: var(--bg-card);
+    }
+    .promo-asset-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .promo-asset-thumb.selected { border-color: var(--amber); }
+    .promo-asset-thumb.upload {
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--sans); font-size: 10px; font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--fg-dim); text-align: center; padding: 4px;
+      border: 1px dashed var(--border); transition: all 0.2s;
+    }
+    .promo-asset-thumb.upload:hover { border-color: var(--fg-dim); color: var(--fg-muted); }
+    .promo-preview-wrap {
+      flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 16px;
+      position: sticky; top: 0;
+    }
+    .promo-canvas-frame {
+      border: 1px solid var(--border); border-radius: 2px; overflow: hidden;
+      line-height: 0; background: var(--bg-card);
+    }
+    .promo-canvas { width: 100%; max-width: 380px; display: block; }
+
     /* ── MODAL ── */
     .modal-overlay {
       position: fixed; inset: 0; background: oklch(0% 0 0 / 0.7);
@@ -486,6 +535,7 @@
       <button class="dash-tab" onclick="showTab('actions')" id="tab-btn-actions">Action Items</button>
       <button class="dash-tab" onclick="showTab('ledger')" id="tab-btn-ledger">Ledger</button>
       <button class="dash-tab" onclick="showTab('brand')" id="tab-btn-brand">Engage Brand</button>
+      <button class="dash-tab" onclick="showTab('promo')" id="tab-btn-promo">Promo Studio</button>
     </div>
 
     <div class="dash-main">
@@ -613,6 +663,71 @@
           <div class="chat-input-row">
             <textarea class="chat-input" id="brand-chat-input" rows="1" placeholder="Ask a follow-up or request edits… (Enter to send, Shift+Enter for newline)" onkeydown="handleBrandChatKey(event)"></textarea>
             <button class="btn-save" onclick="sendBrandMessage()">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROMO STUDIO -->
+      <div class="dash-section" id="sec-promo">
+        <div class="section-header">
+          <h2 class="section-title">Promo <em>Studio</em></h2>
+        </div>
+        <div class="promo-grid">
+          <div class="promo-form">
+            <div>
+              <div class="promo-section-label">Asset Type</div>
+              <div class="promo-format-row" id="promo-format-row"></div>
+            </div>
+
+            <div>
+              <div class="promo-section-label">Show Details</div>
+              <div style="display:flex;flex-direction:column;gap:14px">
+                <div class="field">
+                  <label>Artist / Event Name</label>
+                  <input type="text" id="p-title" placeholder="e.g. Jason Eady Live" oninput="renderPromoCanvas()" />
+                </div>
+                <div class="field">
+                  <label>Venue</label>
+                  <input type="text" id="p-venue" placeholder="e.g. Gruene Hall" oninput="renderPromoCanvas()" />
+                </div>
+                <div class="modal-row">
+                  <div class="field">
+                    <label>City / Location</label>
+                    <input type="text" id="p-location" placeholder="New Braunfels, TX" oninput="renderPromoCanvas()" />
+                  </div>
+                  <div class="field">
+                    <label>Date</label>
+                    <input type="date" id="p-date" oninput="renderPromoCanvas()" />
+                  </div>
+                </div>
+                <div class="modal-row">
+                  <div class="field">
+                    <label>Time</label>
+                    <input type="time" id="p-time" oninput="renderPromoCanvas()" />
+                  </div>
+                  <div class="field">
+                    <label>Ticket / RSVP Link</label>
+                    <input type="text" id="p-link" placeholder="amplifi.org/tickets" oninput="renderPromoCanvas()" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Note (optional)</label>
+                  <input type="text" id="p-note" placeholder="e.g. Doors at 7pm · 21+" oninput="renderPromoCanvas()" />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="promo-section-label">Background</div>
+              <div class="promo-asset-gallery" id="promo-asset-gallery"></div>
+            </div>
+          </div>
+
+          <div class="promo-preview-wrap">
+            <div class="promo-canvas-frame">
+              <canvas class="promo-canvas" id="promo-canvas"></canvas>
+            </div>
+            <button class="btn-add" onclick="downloadPromoImage()">↓ Download Image</button>
           </div>
         </div>
       </div>
@@ -859,6 +974,9 @@
     renderLedger();
     loadGitHubPAT();
     loadAnthropicKey();
+    initPromoFormats();
+    loadPromoAssets();
+    document.fonts.ready.then(() => renderPromoCanvas());
   }
 
   async function seedActionItems() {
@@ -1600,6 +1718,249 @@
     brandConversation = [];
     const container = document.getElementById('brand-chat-messages');
     container.innerHTML = '<div class="chat-empty" id="brand-chat-empty">Paste content above to rewrite it in AmpliFi\'s voice, or ask a brand question to get started.</div>';
+  }
+
+  // ── PROMO STUDIO ──────────────────────────────────────
+  const PROMO_FORMATS = [
+    { id: 'ig-post',  label: 'Instagram Post',  w: 1080, h: 1080 },
+    { id: 'ig-story', label: 'Instagram Story', w: 1080, h: 1920 },
+    { id: 'fb-post',  label: 'Facebook Post',   w: 1200, h: 630  },
+    { id: 'flyer',    label: 'Flyer / Poster',  w: 1080, h: 1350 },
+  ];
+  let promoFormat   = PROMO_FORMATS[0];
+  let promoAssets   = [];
+  let promoBgImage  = null;
+  let promoLoadToken = 0;
+
+  function initPromoFormats() {
+    const row = document.getElementById('promo-format-row');
+    row.innerHTML = PROMO_FORMATS.map(f =>
+      `<button class="promo-format-btn${f.id === promoFormat.id ? ' active' : ''}" id="promo-fmt-${f.id}" onclick="selectPromoFormat('${f.id}')">${f.label}</button>`
+    ).join('');
+    const canvas = document.getElementById('promo-canvas');
+    canvas.width  = promoFormat.w;
+    canvas.height = promoFormat.h;
+    canvas.style.aspectRatio = `${promoFormat.w} / ${promoFormat.h}`;
+  }
+
+  function selectPromoFormat(id) {
+    promoFormat = PROMO_FORMATS.find(f => f.id === id) || PROMO_FORMATS[0];
+    document.querySelectorAll('.promo-format-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('promo-fmt-' + id).classList.add('active');
+    const canvas = document.getElementById('promo-canvas');
+    canvas.width  = promoFormat.w;
+    canvas.height = promoFormat.h;
+    canvas.style.aspectRatio = `${promoFormat.w} / ${promoFormat.h}`;
+    renderPromoCanvas();
+  }
+
+  async function loadPromoAssets() {
+    const gallery = document.getElementById('promo-asset-gallery');
+    try {
+      const res = await fetch('PromoAssets/manifest.json?nocache=' + Date.now());
+      promoAssets = await res.json();
+    } catch {
+      promoAssets = [];
+    }
+    gallery.innerHTML = promoAssets.map((a, i) =>
+      `<div class="promo-asset-thumb" id="promo-asset-${i}" onclick="selectPromoAsset(${i})" title="${esc(a.name)}">
+        <img src="${a.path}" alt="${esc(a.name)}" />
+      </div>`
+    ).join('') + `
+      <label class="promo-asset-thumb upload" title="Upload your own image">
+        ↑ Upload
+        <input type="file" accept="image/*" style="display:none" onchange="handlePromoUpload(event)" />
+      </label>`;
+
+    if (promoAssets.length) selectPromoAsset(0);
+    else renderPromoCanvas();
+  }
+
+  async function selectPromoAsset(index) {
+    const asset = promoAssets[index];
+    if (!asset) return;
+    document.querySelectorAll('.promo-asset-thumb').forEach(el => el.classList.remove('selected'));
+    document.getElementById('promo-asset-' + index)?.classList.add('selected');
+    const token = ++promoLoadToken;
+    try {
+      const img = await loadImage(asset.path);
+      if (token !== promoLoadToken) return;
+      promoBgImage = img;
+      renderPromoCanvas();
+    } catch (e) {
+      console.error('Could not load promo asset:', e);
+    }
+  }
+
+  function handlePromoUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    document.querySelectorAll('.promo-asset-thumb').forEach(el => el.classList.remove('selected'));
+    const reader = new FileReader();
+    const token = ++promoLoadToken;
+    reader.onload = async e => {
+      try {
+        const img = await loadImage(e.target.result);
+        if (token !== promoLoadToken) return;
+        promoBgImage = img;
+        renderPromoCanvas();
+      } catch (err) {
+        console.error('Could not load uploaded image:', err);
+      }
+    };
+    reader.readAsDataURL(file);
+    event.target.value = '';
+  }
+
+  function loadImage(src) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload  = () => resolve(img);
+      img.onerror = reject;
+      img.src = src;
+    });
+  }
+
+  function drawImageCover(ctx, img, x, y, w, h) {
+    const imgRatio = img.width / img.height;
+    const boxRatio = w / h;
+    let sx, sy, sw, sh;
+    if (imgRatio > boxRatio) {
+      sh = img.height; sw = sh * boxRatio; sx = (img.width - sw) / 2; sy = 0;
+    } else {
+      sw = img.width; sh = sw / boxRatio; sx = 0; sy = (img.height - sh) / 2;
+    }
+    ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+  }
+
+  function wrapPromoText(ctx, text, maxWidth) {
+    const words = text.split(/\s+/).filter(Boolean);
+    const lines = [];
+    let current = '';
+    words.forEach(word => {
+      const test = current ? current + ' ' + word : word;
+      if (current && ctx.measureText(test).width > maxWidth) {
+        lines.push(current);
+        current = word;
+      } else {
+        current = test;
+      }
+    });
+    if (current) lines.push(current);
+    if (lines.length > 3) return [...lines.slice(0, 2), lines[2].slice(0, -1) + '…'];
+    return lines.length ? lines : [''];
+  }
+
+  function fmtPromoDate(d) {
+    if (!d) return '';
+    const [y, m, day] = d.split('-').map(Number);
+    return new Date(y, m - 1, day).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+
+  function fmtPromoTime(t) {
+    if (!t) return '';
+    const [h, m] = t.split(':').map(Number);
+    const period = h >= 12 ? 'PM' : 'AM';
+    return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${period}`;
+  }
+
+  function renderPromoCanvas() {
+    const canvas = document.getElementById('promo-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = '#1c1712';
+    ctx.fillRect(0, 0, w, h);
+    if (promoBgImage) drawImageCover(ctx, promoBgImage, 0, 0, w, h);
+
+    const grad = ctx.createLinearGradient(0, h * 0.35, 0, h);
+    grad.addColorStop(0, 'rgba(20,15,10,0)');
+    grad.addColorStop(1, 'rgba(15,11,7,0.94)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+
+    // Scale text off the shorter dimension so landscape formats (e.g. Facebook
+    // Post) don't get oversized type sized for the long edge.
+    const base = Math.min(w, h);
+    const pad = base * 0.07;
+    let y = h - pad;
+
+    const title    = (document.getElementById('p-title')?.value || 'Untitled Event').trim();
+    const venue    = (document.getElementById('p-venue')?.value || '').trim();
+    const location = (document.getElementById('p-location')?.value || '').trim();
+    const date     = document.getElementById('p-date')?.value || '';
+    const time     = document.getElementById('p-time')?.value || '';
+    const link     = (document.getElementById('p-link')?.value || '').trim();
+    const note     = (document.getElementById('p-note')?.value || '').trim();
+
+    const cream = '#f2ead8', muted = 'rgba(242,234,216,0.7)', amber = '#c8a45a';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+
+    if (link) {
+      ctx.font = `${Math.round(base * 0.024)}px 'DM Sans', sans-serif`;
+      ctx.fillStyle = amber;
+      ctx.fillText(link, pad, y);
+      y -= base * 0.052;
+    }
+    if (note) {
+      ctx.font = `300 ${Math.round(base * 0.026)}px 'DM Sans', sans-serif`;
+      ctx.fillStyle = muted;
+      ctx.fillText(note, pad, y);
+      y -= base * 0.045;
+    }
+
+    const dateTime = [fmtPromoDate(date), fmtPromoTime(time)].filter(Boolean).join('  ·  ');
+    if (dateTime) {
+      ctx.font = `500 ${Math.round(base * 0.032)}px 'DM Sans', sans-serif`;
+      ctx.fillStyle = amber;
+      ctx.fillText(dateTime, pad, y);
+      y -= base * 0.05;
+    }
+
+    const venueLine = [venue, location].filter(Boolean).join('  ·  ');
+    if (venueLine) {
+      ctx.font = `300 ${Math.round(base * 0.032)}px 'DM Sans', sans-serif`;
+      ctx.fillStyle = cream;
+      ctx.fillText(venueLine, pad, y);
+      y -= base * 0.06;
+    }
+
+    ctx.font = `300 ${Math.round(base * 0.09)}px 'Cormorant Garamond', serif`;
+    ctx.fillStyle = cream;
+    const titleLines = wrapPromoText(ctx, title, w - pad * 2);
+    const titleLineHeight = base * 0.088;
+    for (let i = titleLines.length - 1; i >= 0; i--) {
+      ctx.fillText(titleLines[i], pad, y);
+      y -= titleLineHeight;
+    }
+    y -= base * 0.02;
+
+    ctx.font = `600 ${Math.round(base * 0.02)}px 'DM Sans', sans-serif`;
+    ctx.fillStyle = amber;
+    ctx.fillText('A M P L I F I   P R E S E N T S', pad, y);
+
+    ctx.textAlign = 'right';
+    ctx.font = `600 ${Math.round(base * 0.02)}px 'DM Sans', sans-serif`;
+    ctx.fillStyle = 'rgba(242,234,216,0.55)';
+    ctx.fillText('A M P L I F I', w - pad, h - pad);
+    ctx.textAlign = 'left';
+  }
+
+  function downloadPromoImage() {
+    const canvas = document.getElementById('promo-canvas');
+    const title = (document.getElementById('p-title')?.value || 'amplifi-promo').trim();
+    const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'amplifi-promo';
+    canvas.toBlob(blob => {
+      if (!blob) return;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${slug}-${promoFormat.id}.png`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }, 'image/png');
   }
 
   // ── HELPERS ───────────────────────────────────────────
