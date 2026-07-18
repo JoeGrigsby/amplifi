@@ -780,6 +780,7 @@
     'jgrigsby@gmail.com',
     'nateayoung55@gmail.com',
     'tim.eavenson@gmail.com',
+    'mfairchild@live.com',
   ];
 
   function showDashboard(user) {
@@ -912,6 +913,13 @@
       }
       list.innerHTML = '<div class="files-grid">' +
         files.map(f => {
+          if (f.url) {
+            return `<div class="file-card" onclick="window.open('${f.url}','_blank')">
+              <span class="file-ext">LINK</span>
+              <div class="file-name">${f.name}</div>
+              <div class="file-date">${f.date || ''}</div>
+            </div>`;
+          }
           const ext = f.file.split('.').pop().toUpperCase();
           return `<div class="file-card" onclick="openFile('${f.file}','${f.name}')">
             <span class="file-ext">${ext}</span>
