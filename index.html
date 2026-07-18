@@ -310,6 +310,41 @@
     }
     .program-link:hover { gap: 14px; }
 
+    /* TEAM */
+    .team { background: var(--bg-warm); }
+    .team-inner { max-width: 1200px; margin: 0 auto; }
+    .team-header { max-width: 640px; margin-bottom: 64px; }
+    .team-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 2px;
+    }
+    .team-card {
+      background: var(--bg-card); padding: 40px 24px;
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      position: relative; overflow: hidden; transition: background 0.3s;
+    }
+    .team-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: var(--amber); transform: scaleX(0);
+      transform-origin: left; transition: transform 0.4s ease;
+    }
+    .team-card:hover { background: oklch(19% 0.018 55); }
+    .team-card:hover::before { transform: scaleX(1); }
+    .team-avatar {
+      width: 64px; height: 64px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border); background: oklch(19% 0.018 55);
+      font-family: var(--serif); font-size: 22px; font-weight: 400; color: var(--amber);
+      margin-bottom: 20px;
+    }
+    .team-name { font-family: var(--serif); font-size: 20px; font-weight: 400; }
+    .team-role {
+      font-family: var(--sans); font-size: 11px; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg-dim);
+      margin-top: 6px;
+    }
+
     /* FLYWHEEL */
     .flywheel { background: var(--bg-warm); }
     .flywheel-inner { max-width: 1100px; margin: 0 auto; }
@@ -542,6 +577,7 @@
   <div class="nav-links">
     <a href="#mission">Mission</a>
     <a href="#programs">Programs</a>
+    <a href="#team">Team</a>
     <a href="culture.html">Culture</a>
     <a href="#join" class="nav-cta" style="color: rgb(254, 254, 254)">Get Involved</a>
   </div>
@@ -788,6 +824,44 @@ function App({ tweaks }) {
       </section>
 
 
+      {/* TEAM */}
+      <section id="team" className="team">
+        <div className="team-inner">
+          <div className="team-header">
+            <div className="section-label">Board & Team</div>
+            <h2 className="section-title">The People <em>Behind It</em></h2>
+            <p className="section-body">A volunteer board and a small team building the infrastructure — people who've lived the independent songwriter's path.</p>
+          </div>
+          <div className="team-grid">
+            <div className="team-card">
+              <div className="team-avatar">JG</div>
+              <div className="team-name">Joseph Grigsby</div>
+              <div className="team-role">President</div>
+            </div>
+            <div className="team-card">
+              <div className="team-avatar">TE</div>
+              <div className="team-name">Timothy Eavenson</div>
+              <div className="team-role">Secretary</div>
+            </div>
+            <div className="team-card">
+              <div className="team-avatar">NY</div>
+              <div className="team-name">Nathan Young</div>
+              <div className="team-role">Treasurer</div>
+            </div>
+            <div className="team-card">
+              <div className="team-avatar">BK</div>
+              <div className="team-name">Bill Krecji</div>
+              <div className="team-role">Operations</div>
+            </div>
+            <div className="team-card">
+              <div className="team-avatar">MF</div>
+              <div className="team-name">Matt Fairchild</div>
+              <div className="team-role">Technology</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* QUOTE STRIP */}
       <div className="quote-strip">
         <blockquote>
@@ -873,7 +947,7 @@ function App({ tweaks }) {
             <h4>Organization</h4>
             <ul>
               <li><a href="#">About</a></li>
-              <li><a href="#">Board & Team</a></li>
+              <li><a href="#team">Board & Team</a></li>
               <li><a href="#">Contact</a></li>
               <li><a href="#">Donate</a></li>
             </ul>
